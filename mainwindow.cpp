@@ -27,8 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->customPlot->legend->setSelectableParts(
         QCPLegend::spItems); // legend box shall not be selectable, only legend items
 
-    ui->customPlot->yAxis->setRange(0, 90000);
-    ui->customPlot->xAxis->setRange(0, 1100);
+    ui->customPlot->yAxis->setRange(0, 6000000);
+    ui->customPlot->xAxis->setRange(10000, 100000);
 
     // connect slot that ties some axis selections together (especially opposite axes):
     connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));

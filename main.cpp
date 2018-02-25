@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <EAlgs.h>
 #include "fastEAlgs.h"
+#include "logger.h"
 
 inline double getStandartDeviation(uint32_t ans, const std::vector<double> &t)
 {
@@ -21,7 +22,6 @@ inline double getStandartDeviation(uint32_t ans, const std::vector<double> &t)
     s /= n;
     return sqrt(s);
 }
-
 
 struct resultsTable
 {
@@ -53,22 +53,33 @@ private:
     const uint32_t offset;
 };
 
-const uint32_t N = 1000;
-const uint32_t LAMBDA = 10;
-const uint32_t TESTS = 100;
+using uint = uint32_t;
+
+const uint N_BEGIN = 10000;
+const uint N_END = 100000;
+const uint N_STEP = 10000;
+
+const uint LAMBDA_BEGIN = 200;
+const uint LAMBDA_END = 200;
+const uint LAMBDA_STEP = 1;
+
+const uint TESTS = 100;
 
 template <typename F>
 uint32_t average(F f, uint32_t n, uint32_t lambda, resultsTable &table)
 {
     uint32_t ans = 0;
     std::vector<double> t;
-    for (uint32_t test = 0; test < TESTS; test++)
+    for (uint32_t test = 0; test < TESTS; ++test)
     {
         std::vector<bool> offs(n, false);
         generate(offs);
         uint32_t ti = f(offs, lambda);
         ans += ti;
         t.push_back(static_cast<double>(ti));
+
+        if (test % 25 == 0)
+            LOG("Passed test № ", test, "for lambda = ", lambda, " for n = ", n);
     }
     ans /= TESTS;
     table.add(lambda, n, ans, getStandartDeviation(ans, t));
@@ -79,13 +90,19 @@ template <typename F>
 void measure(F f, resultsTable &table, MainWindow &w, QColor graphColor,
              const char *nameOfGraphLine, uint32_t lambda)
 {
+    LOG("\n");
+    LOG("Started line: ", nameOfGraphLine);
+    LOG("\n");
+
     std::vector<std::pair<uint32_t, uint32_t>> prob;
-    for (uint32_t n = 100; n <= N; n += 100)
+    for (uint32_t n = N_BEGIN; n <= N_END; n += N_STEP)
     {
         uint32_t ans = average(f, n, lambda, table);
         prob.push_back(std::make_pair(n, ans));
+        LOG("Done for lambda = ", lambda, ", n = ", n, ", for line: ", nameOfGraphLine);
     }
     table.add();
+    LOG("Done for lambda = ", lambda, ", for line: ", nameOfGraphLine);
     w.addNewGraph(prob, graphColor, nameOfGraphLine);
 }
 
@@ -97,7 +114,7 @@ int main(int argc, char *argv[])
     resultsTable table("resultsStatic.txt", 25);
     resultsTable tableAdjusting("resultsAdjusting.txt", 25);
 
-    for (uint32_t lambda = 2; lambda <= LAMBDA; ++lambda)
+    for (uint32_t lambda = LAMBDA_BEGIN; lambda <= LAMBDA_END; lambda += LAMBDA_STEP)
     {
         measure(staticMutationProbability::fast::oneMax, table, w, Qt::blue, "Static Mutation Probability",
                 lambda);

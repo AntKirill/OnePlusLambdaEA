@@ -2,9 +2,24 @@
 #include "probability_t.h"
 #include "math.h"
 #include "random"
+#include <iostream>
+#include <limits>
+#include <array>
 
 static std::random_device rd;
 static std::mt19937 gen(rd());
+
+const size_t N = 1000010;
+
+std::array<uint, N> ids; // id of bits to change
+
+struct offspring_patch_t
+{
+    uint toChangeAmount;
+    uint fit;
+    probability_t p;
+    offspring_patch_t(uint fit, const probability_t &p) : toChangeAmount(0), fit(fit), p(p) {}
+};
 
 struct offspring_t
 {
@@ -19,6 +34,15 @@ struct offspring_t
 
     offspring_t(const std::vector<bool> &bits, uint fit, const probability_t &p) : bits(bits), fit(fit),
         p(p) {}
+
+    offspring_t &operator=(const offspring_patch_t &rhs_patch)
+    {
+        for (uint i = 0; i < rhs_patch.toChangeAmount; ++i)
+            bits[ids[i]] = !bits[ids[i]];
+        fit = rhs_patch.fit;
+        p = rhs_patch.p;
+        return *this;
+    }
 };
 
 uint oneMaxFitness(const std::vector<bool> &bits)
@@ -38,31 +62,33 @@ double oneMinus(const probability_t &p)
     return static_cast<double>(p.n - p.m) / static_cast<double>(p.n);
 }
 
-static inline uint get_next_ind(uint ind, const probability_t &p)
+static inline uint get_next_ind(int ind, const probability_t &p)
 {
-    static const int N = 1000;
-    std::uniform_int_distribution<> dis(1, N);
-    double r = static_cast<double>(dis(gen)) / static_cast<double>(N);
-    return ind + 1 + static_cast<uint>(floor(logn(oneMinus(p), r)));
+    static const double N = std::numeric_limits<double>::max();
+    std::uniform_real_distribution<double> dis(0, N);
+    double r = dis(gen) / N;
+    uint k = static_cast<uint>(ind + 1);
+    return k + static_cast<uint>(floor(logn(oneMinus(p), r)));
 }
 
-static bool mutation(uint ind, offspring_t &x, uint &cur_fit, const probability_t &p)
+static bool mutation(uint ind, const offspring_t &x, uint &cur_fit, const probability_t &p, offspring_patch_t &patch)
 {
     if (ind >= x.bits.size())
     {
-        if (cur_fit >= x.fit)
+        if (cur_fit >= patch.fit)
         {
-            x.fit = cur_fit;
-            x.p = p;
+            patch.toChangeAmount = 0;
+            patch.fit = cur_fit;
+            patch.p = p;
             return true;
         }
         return false;
     }
     if (x.bits[ind]) --cur_fit;
     else ++cur_fit;
-    if (mutation(get_next_ind(ind, p), x, cur_fit, p))
+    if (mutation(get_next_ind(ind, p), x, cur_fit, p, patch))
     {
-        x.bits[ind] = !x.bits[ind];
+        ids[patch.toChangeAmount++] = ind;
         return true;
     }
     return false;
@@ -74,13 +100,16 @@ uint staticMutationProbability::fast::oneMax(std::vector<bool> bits, uint lambda
     probability_t p(n);
     auto x = offspring_t(bits, p);
     uint ans = 0;
+
     while (x.fit != n)
     {
+        offspring_patch_t patch(x.fit, p);
         for (uint i = 0; i < lambda; ++i)
         {
             uint condidateFit = x.fit;
-            mutation(get_next_ind(-1, p), x, condidateFit, p);
+            mutation(get_next_ind(-1, p), x, condidateFit, p, patch);
         }
+        x = patch;
         ans += lambda;
     }
     return ans;
@@ -100,13 +129,13 @@ oneMax(std::vector<bool> bits, uint lambda)
     uint halflambda = lambda / 2;
     probability_t pBest(n);
 
-    auto doMutation = [&](bool & wasUpdate, uint from, uint to)
+    auto doMutation = [&](bool & wasUpdate, uint from, uint to, offspring_patch_t &patch)
     {
         uint delta = n + 1;
         for (uint i = from; i < to; ++i)
         {
             uint condidateFit = x.fit;
-            bool updated = mutation(get_next_ind(-1, p), x, condidateFit, p);
+            bool updated = mutation(get_next_ind(-1, p), x, condidateFit, p, patch);
             if (!updated && (delta > x.fit - condidateFit))
             {
                 delta = x.fit - condidateFit;
@@ -118,12 +147,17 @@ oneMax(std::vector<bool> bits, uint lambda)
 
     while (x.fit != n)
     {
+        offspring_patch_t patch(x.fit, x.p);
         bool wasUpdate = false;
         p *= 2;
-        doMutation(wasUpdate, 0, halflambda);
+        doMutation(wasUpdate, 0, halflambda, patch);
         p /= 4;
-        doMutation(wasUpdate, halflambda, lambda);
-        if (wasUpdate) pBest = x.p;
+        doMutation(wasUpdate, halflambda, lambda, patch);
+        if (wasUpdate)
+        {
+            x = patch;
+            pBest = x.p;
+        }
         if (half()) p = pBest;
         else if (half()) p *= 4;
         p = std::min(std::max(p1, p), p2);
