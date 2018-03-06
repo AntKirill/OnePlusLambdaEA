@@ -12,7 +12,7 @@ namespace staticMutationProbability
 {
     namespace fast
     {
-        uint oneMax(std::vector<bool> bits, uint lambda);
+        uint oneMax(const std::vector<bool> &bits, uint lambda);
     }
 }
 
@@ -20,7 +20,7 @@ namespace adjustingMutationProbabilityWithTwoOffsprings
 {
     namespace fast
     {
-        uint oneMax(std::vector<bool> bits, uint lambda);
+        uint oneMax(const std::vector<bool> &bits, uint lambda);
     }
 }
 

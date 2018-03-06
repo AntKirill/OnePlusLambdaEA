@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QInputDialog>
-#include "/home/kirant/qcustomplot/qcustomplot.h"
+#include "qcustomplot.h"
 
 namespace Ui
 {

@@ -62,16 +62,16 @@ double oneMinus(const probability_t &p)
     return static_cast<double>(p.n - p.m) / static_cast<double>(p.n);
 }
 
-static inline uint get_next_ind(int ind, const probability_t &p)
+static inline uint get_next_ind(int ind, double log1prob)
 {
-    static const double N = std::numeric_limits<double>::max();
-    std::uniform_real_distribution<double> dis(0, N);
-    double r = dis(gen) / N;
+    std::uniform_real_distribution<double> dis(0, 1);
+    double r = dis(gen);
     uint k = static_cast<uint>(ind + 1);
-    return k + static_cast<uint>(floor(logn(oneMinus(p), r)));
+    return k + static_cast<uint>(floor(log(r) / log1prob));
 }
 
-static bool mutation(uint ind, const offspring_t &x, uint &cur_fit, const probability_t &p, offspring_patch_t &patch)
+static bool mutation(uint ind, const offspring_t &x, uint &cur_fit, const probability_t &p,
+                     double log1prob, offspring_patch_t &patch)
 {
     if (ind >= x.bits.size())
     {
@@ -86,7 +86,7 @@ static bool mutation(uint ind, const offspring_t &x, uint &cur_fit, const probab
     }
     if (x.bits[ind]) --cur_fit;
     else ++cur_fit;
-    if (mutation(get_next_ind(ind, p), x, cur_fit, p, patch))
+    if (mutation(get_next_ind(ind, log1prob), x, cur_fit, p, log1prob, patch))
     {
         ids[patch.toChangeAmount++] = ind;
         return true;
@@ -94,12 +94,14 @@ static bool mutation(uint ind, const offspring_t &x, uint &cur_fit, const probab
     return false;
 }
 
-uint staticMutationProbability::fast::oneMax(std::vector<bool> bits, uint lambda)
+uint staticMutationProbability::fast::oneMax(const std::vector<bool> &bits, uint lambda)
 {
     uint n = static_cast<uint>(bits.size());
     probability_t p(n);
     auto x = offspring_t(bits, p);
     uint ans = 0;
+
+    double log1prob = log(oneMinus(p));
 
     while (x.fit != n)
     {
@@ -107,7 +109,7 @@ uint staticMutationProbability::fast::oneMax(std::vector<bool> bits, uint lambda
         for (uint i = 0; i < lambda; ++i)
         {
             uint condidateFit = x.fit;
-            mutation(get_next_ind(-1, p), x, condidateFit, p, patch);
+            mutation(get_next_ind(-1, log1prob), x, condidateFit, p, log1prob, patch);
         }
         x = patch;
         ans += lambda;
@@ -119,7 +121,7 @@ static const probability_t half(2);
 static const probability_t p2(4);
 
 uint adjustingMutationProbabilityWithTwoOffsprings::fast::
-oneMax(std::vector<bool> bits, uint lambda)
+oneMax(const std::vector<bool> &bits, uint lambda)
 {
     uint n = static_cast<uint>(bits.size());
     const probability_t p1(n / 2);
@@ -129,13 +131,13 @@ oneMax(std::vector<bool> bits, uint lambda)
     uint halflambda = lambda / 2;
     probability_t pBest(n);
 
-    auto doMutation = [&](bool & wasUpdate, uint from, uint to, offspring_patch_t &patch)
+    auto doMutation = [&](bool & wasUpdate, uint & delta, uint from, uint to, offspring_patch_t &patch)
     {
-        uint delta = n + 1;
         for (uint i = from; i < to; ++i)
         {
             uint condidateFit = x.fit;
-            bool updated = mutation(get_next_ind(-1, p), x, condidateFit, p, patch);
+            double log1prob = log(oneMinus(p));
+            bool updated = mutation(get_next_ind(-1, log1prob), x, condidateFit, p, log1prob, patch);
             if (!updated && (delta > x.fit - condidateFit))
             {
                 delta = x.fit - condidateFit;
@@ -149,10 +151,11 @@ oneMax(std::vector<bool> bits, uint lambda)
     {
         offspring_patch_t patch(x.fit, x.p);
         bool wasUpdate = false;
+        uint delta = n + 1;
         p *= 2;
-        doMutation(wasUpdate, 0, halflambda, patch);
+        doMutation(wasUpdate, delta, 0, halflambda, patch);
         p /= 4;
-        doMutation(wasUpdate, halflambda, lambda, patch);
+        doMutation(wasUpdate, delta, halflambda, lambda, patch);
         if (wasUpdate)
         {
             x = patch;

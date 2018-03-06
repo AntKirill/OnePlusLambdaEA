@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <EAlgs.h>
+#include "EAlgs.h"
 #include "fastEAlgs.h"
 #include "logger.h"
 
@@ -64,6 +64,15 @@ const uint LAMBDA_END = 200;
 const uint LAMBDA_STEP = 1;
 
 const uint TESTS = 100;
+
+void generate(std::vector<bool> &x)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 1);
+    for (size_t i = 0; i < x.size(); ++i)
+        x[i] = static_cast<bool>(dis(gen));
+}
 
 template <typename F>
 uint32_t average(F f, uint32_t n, uint32_t lambda, resultsTable &table)

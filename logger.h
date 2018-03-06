@@ -10,7 +10,8 @@ static void write_debug_output(std::ostream &out, TF const &f)
     out << f;
 }
 
-static int _path_length = strlen(__FILE__) - strlen(strrchr(__FILE__, '/')) + 1;
+static int _path_length = strrchr(__FILE__, '/') ? strlen(__FILE__) -
+                          strlen(strrchr(__FILE__, '/')) + 1 : 0;
 
 struct tracer
 {
