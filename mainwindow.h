@@ -15,7 +15,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(std::pair<uint, uint> xRange, std::pair<uint, uint> yRange, QWidget *parent = nullptr);
     void addNewGraph(const std::vector<std::pair<uint32_t, uint32_t>> &gr, QColor color, QString name);
     void saveGraphPng(uint32_t lambda);
     void removeAllGraphs();

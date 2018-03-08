@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) :
+using uint = uint32_t;
+
+MainWindow::MainWindow(std::pair<uint, uint> xRange, std::pair<uint, uint> yRange, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
@@ -27,8 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->customPlot->legend->setSelectableParts(
         QCPLegend::spItems); // legend box shall not be selectable, only legend items
 
-    ui->customPlot->yAxis->setRange(0, 6000000);
-    ui->customPlot->xAxis->setRange(10000, 100000);
+    ui->customPlot->yAxis->setRange(yRange.first, yRange.second);
+    ui->customPlot->xAxis->setRange(xRange.first, xRange.second);
 
     // connect slot that ties some axis selections together (especially opposite axes):
     connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));
@@ -240,6 +242,7 @@ void MainWindow::addNewGraph(const std::vector<std::pair<uint32_t, uint32_t> > &
     ui->customPlot->graph()->setData(x, y);
     QPen graphPen;
     graphPen.setColor(color);
+    graphPen.setWidthF(1.8);
     ui->customPlot->graph()->setPen(graphPen);
     ui->customPlot->replot();
 }
