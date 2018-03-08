@@ -9,9 +9,11 @@
 #include "fastEAlgs.h"
 #include "logger.h"
 #include <mutex>
-#include <thread>
 #include <unordered_map>
 #include <chrono>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio.hpp>
+#include <boost/dynamic_bitset.hpp>
 
 const uint N_BEGIN = 100;
 const uint N_END = 1000;
@@ -23,21 +25,7 @@ const uint LAMBDA_STEP = 1;
 
 const uint TESTS = 100;
 
-inline double getStandartDeviation(uint32_t ans, const std::vector<double> &t)
-{
-    double t_av = static_cast<double>(ans);
-    double s = 0;
-    double n = static_cast<double>(t.size());
-    for (auto ti : t)
-    {
-        s += (ti - t_av) * (ti - t_av);
-    }
-    s /= n;
-    return sqrt(s);
-}
-
 using uint = uint32_t;
-struct ResultsTextTable;
 
 struct ResultsTable
 {
@@ -107,67 +95,65 @@ private:
 };
 
 
-void generate(std::vector<bool> &x)
+void generate(boost::dynamic_bitset<> &x, std::mt19937 &engine)
 {
-    std::random_device rd;
-    std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 1);
     for (size_t i = 0; i < x.size(); ++i)
-        x[i] = static_cast<bool>(dis(gen));
+        x[i] = static_cast<bool>(dis(engine));
 }
 
-using oneMax_t = uint32_t (const std::vector<bool> &, uint32_t);
+using oneMax_t = uint32_t (const boost::dynamic_bitset<> &, uint32_t);
 
-uint32_t average(oneMax_t *f, uint32_t n, uint32_t lambda, ResultsTable *table)
+inline double getStandartDeviation(uint32_t ans, const std::vector<double> &t)
+{
+    double t_av = static_cast<double>(ans);
+    double s = 0;
+    double n = static_cast<double>(t.size());
+    for (auto ti : t)
+    {
+        s += (ti - t_av) * (ti - t_av);
+    }
+    s /= n;
+    return sqrt(s);
+}
+
+void average(oneMax_t *f, uint32_t n, uint32_t lambda, ResultsTable *table)
 {
     uint32_t ans = 0;
     std::vector<double> t;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    boost::dynamic_bitset<> offs(n);
     for (uint32_t test = 0; test < TESTS; ++test)
     {
-        std::vector<bool> offs(n, false);
-        generate(offs);
+        generate(offs, gen);
         uint32_t ti = f(offs, lambda);
+        #ifndef NDEBUG
+        assert(offs.count() == offs.size());
+        #endif
         ans += ti;
         t.push_back(static_cast<double>(ti));
     }
     ans /= TESTS;
     table->add(lambda, n, ans, getStandartDeviation(ans, t));
     table->printResults();
-    return ans;
 }
 
-void measure(oneMax_t *f, ResultsTable &table, uint32_t lambda, const char *nameOfGraphLine,
-             size_t threadsAmount = 0)
+void pool_all(const std::vector<std::pair<oneMax_t *, ResultsTable *>> &fts, size_t threadsAmount)
 {
-    LOG("\n");
-    LOG("Started line: ", nameOfGraphLine);
-    LOG("\n");
-
-    if (threadsAmount == 0)
+    boost::asio::thread_pool pool(threadsAmount);
+    for (const auto &f : fts)
     {
-        for (uint i = N_BEGIN; i <= N_END; i += N_STEP)
-            average(f, i, lambda, &table);
-        LOG("Done for lambda = ", lambda, ", for line: ", nameOfGraphLine);
-    }
-    else
-    {
-        std::vector<std::thread> ths(threadsAmount);
-        uint curTask = N_BEGIN;
-        while (curTask <= N_END)
+        for (uint lambda = LAMBDA_BEGIN; lambda <= LAMBDA_END; lambda += LAMBDA_STEP)
         {
-            size_t buzy = 0;
-            for (auto &t : ths)
+            for (uint i = N_BEGIN; i <= N_END; i += N_STEP)
             {
-                if (curTask > N_END) break;
-                t = std::thread(average, f, curTask, lambda, &table);
-                ++buzy;
-                curTask += N_STEP;
+                auto task = std::bind(average, f.first, i, lambda, f.second);
+                boost::asio::post(pool, task);
             }
-            for (size_t i = 0; i != buzy; ++i)
-                ths[i].join();
         }
-        LOG("Done for lambda = ", lambda, ", for line: ", nameOfGraphLine);
     }
+    pool.join();
 }
 
 int main()
@@ -177,19 +163,19 @@ int main()
     ResultsTable table("resultsStatic.txt", 25);
     ResultsTable tableAdj("resultsAdjusting.txt", 25);
 
-    for (uint32_t lambda = LAMBDA_BEGIN; lambda <= LAMBDA_END; lambda += LAMBDA_STEP)
+    std::vector<std::pair<oneMax_t *, ResultsTable *>> fts =
     {
-        measure(&staticMutationProbability::fast::oneMax, table, lambda, "Static Mutation Probability", 10);
-        measure(&adjustingMutationProbabilityWithTwoOffsprings::fast::oneMax, tableAdj, lambda,
-                "Adjusting Mutation Probability", 10);
-    }
+        {&staticMutationProbability::fast::oneMax, &table},
+        {&adjustingMutationProbabilityWithTwoOffsprings::fast::oneMax, &tableAdj}
+    };
+
+    pool_all(fts, 8);
 
     table.printResults();
     tableAdj.printResults();
 
     auto end = std::chrono::steady_clock::now();
-    auto diff = end - start;
-    LOG("time : ", std::chrono::duration <double, std::milli> (diff).count() / 1000., " secs");
+    LOG("time : ", std::chrono::duration <double, std::milli> (end - start).count() / 1000., " secs");
 
     return 0;
 }
