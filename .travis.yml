@@ -18,4 +18,8 @@ env:
 script:
     - cd build
     - travis_wait 1000000 ./run
+    - echo "Results Static"
+    - cat resultsStatic.txt
+    - echo "Results Adjusting"
+    - cat resultsAdjusting.txt
 
