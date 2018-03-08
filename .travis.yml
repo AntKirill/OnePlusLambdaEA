@@ -1,0 +1,28 @@
+dist:     xenial    
+sudo:     required  
+
+language: cpp       
+                    
+
+os:
+    - linux
+
+compiler:
+    # ... и с помощью GCC, и Clang
+    - g++
+
+env:
+    - TARGET_CPU=amd64 BUILD_CONFIGURATION=Release
+
+install:
+    # скрипт настройки среды и установки зависимостей:
+    - source ci/travis/install-$TRAVIS_OS_NAME.sh
+
+script:
+    # скрипт сборки и тестирования проекта:
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU
+    - make
+    - ./run
+
