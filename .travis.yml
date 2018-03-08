@@ -12,13 +12,10 @@ compiler:
 env:
     - TARGET_CPU=amd64 BUILD_CONFIGURATION=Release
 
-install:
-    - source install-linux.bash
+# install:
+#     - source install-linux.bash
 
 script:
-    - mkdir build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTARGET_CPU=$TARGET_CPU
-    - make
     - travis_wait 1000000 ./run
 
