@@ -3,16 +3,17 @@
 
 #include <vector>
 #include <stdint.h>
+#include <boost/dynamic_bitset.hpp>
 
 using uint = uint32_t;
 
-uint oneMaxFitness(const std::vector<bool> &bits);
+uint oneMaxFitness(const boost::dynamic_bitset<> &bits);
 
 namespace staticMutationProbability
 {
     namespace fast
     {
-        uint oneMax(const std::vector<bool> &bits, uint lambda);
+        uint oneMax(const boost::dynamic_bitset<> &bits, uint lambda);
     }
 }
 
@@ -20,7 +21,7 @@ namespace adjustingMutationProbabilityWithTwoOffsprings
 {
     namespace fast
     {
-        uint oneMax(const std::vector<bool> &bits, uint lambda);
+        uint oneMax(const boost::dynamic_bitset<> &bits, uint lambda);
     }
 }
 

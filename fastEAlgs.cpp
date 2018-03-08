@@ -19,16 +19,16 @@ struct offspring_patch_t
 
 struct offspring_t
 {
-    std::vector<bool> bits;
+    boost::dynamic_bitset<> bits;
     uint32_t fit;
     probability_t p;
 
-    offspring_t(const std::vector<bool> &bits, const probability_t &p) : bits(bits), p(p)
+    offspring_t(const boost::dynamic_bitset<> &bits, const probability_t &p) : bits(bits), p(p)
     {
         fit = oneMaxFitness(bits);
     }
 
-    offspring_t(const std::vector<bool> &bits, uint fit, const probability_t &p) : bits(bits), fit(fit),
+    offspring_t(const boost::dynamic_bitset<> &bits, uint fit, const probability_t &p) : bits(bits), fit(fit),
         p(p) {}
 
     offspring_t &operator=(const offspring_patch_t &rhs_patch)
@@ -41,11 +41,9 @@ struct offspring_t
     }
 };
 
-uint oneMaxFitness(const std::vector<bool> &bits)
+uint oneMaxFitness(const boost::dynamic_bitset<> &bits)
 {
-    uint ans = 0;
-    for (auto i : bits) if (i) ++ans;
-    return ans;
+    return bits.count();
 }
 
 static inline double logn(double base, double r)
@@ -99,7 +97,7 @@ static bool mutation(const offspring_t &curParrent, NextIndexGetter &getter,
     return updated;
 }
 
-uint staticMutationProbability::fast::oneMax(const std::vector<bool> &bits, uint lambda)
+uint staticMutationProbability::fast::oneMax(const boost::dynamic_bitset<> &bits, uint lambda)
 {
     NextIndexGetter getter;
     uint n = static_cast<uint>(bits.size());
@@ -122,7 +120,7 @@ uint staticMutationProbability::fast::oneMax(const std::vector<bool> &bits, uint
 }
 
 uint adjustingMutationProbabilityWithTwoOffsprings::fast::
-oneMax(const std::vector<bool> &bits, uint lambda)
+oneMax(const boost::dynamic_bitset<> &bits, uint lambda)
 {
     static const probability_t half(2);
     static const probability_t p2(4);
