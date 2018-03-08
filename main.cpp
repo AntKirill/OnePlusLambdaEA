@@ -1,14 +1,27 @@
-#include <QApplication>
-#include "mainwindow.h"
 #include <functional>
 #include <vector>
 #include <stddef.h>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include "EAlgs.h"
+#include <cmath>
+#include <random>
 #include "fastEAlgs.h"
 #include "logger.h"
+#include <mutex>
+#include <thread>
+#include <unordered_map>
+#include <chrono>
+
+const uint N_BEGIN = 100;
+const uint N_END = 1000;
+const uint N_STEP = 100;
+
+const uint LAMBDA_BEGIN = 2;
+const uint LAMBDA_END = 10;
+const uint LAMBDA_STEP = 1;
+
+const uint TESTS = 100;
 
 inline double getStandartDeviation(uint32_t ans, const std::vector<double> &t)
 {
@@ -23,47 +36,76 @@ inline double getStandartDeviation(uint32_t ans, const std::vector<double> &t)
     return sqrt(s);
 }
 
-struct resultsTable
+using uint = uint32_t;
+struct ResultsTextTable;
+
+struct ResultsTable
 {
-    resultsTable(const std::string &fileName, uint32_t offset) : fout(fileName), offset(offset)
+    ResultsTable(const std::string &fileName, uint32_t offset) : toPrintNextLambda(LAMBDA_BEGIN),
+        toPrintNextN(N_BEGIN), fileName(fileName), fout(fileName), offset(offset)
     {
         fout << std::setw(offset) << "lambda" << std::setw(offset) << "n" << std::setw(
                  offset) << "function evaluations" << std::setw(offset) << "standard deviation" << std::endl;
         fout << std::endl;
     }
 
-    void add(uint32_t lambda, uint32_t n, uint32_t ans, double deviation)
+    void add(uint lambda, uint n, uint evoluations, double deviation)
+    {
+        data_mtx.lock();
+        results[lambda][n] = std::make_pair(evoluations, deviation);
+        LOG("Done for lambda = ", lambda, ", n = ", n, ", for line: ", fileName);
+        data_mtx.unlock();
+    }
+
+    void printResults()
+    {
+        data_mtx.lock();
+        for (uint &i = toPrintNextLambda; i <= LAMBDA_END; i += LAMBDA_STEP)
+        {
+            if (toPrintNextN > N_END) toPrintNextN = N_BEGIN;
+            if (!results.count(i)) break;
+            bool ok = false;
+            for (uint &j = toPrintNextN; j <= N_END; j += N_STEP)
+            {
+                ok = false;
+                if (!results[i].count(j)) break;
+                ok = true;
+                print(i, j, results[i][j].first, results[i][j].second);
+            }
+            if (!ok) break;
+            print();
+        }
+        data_mtx.unlock();
+    }
+
+    ~ResultsTable()
+    {
+        fout.close();
+    }
+private:
+
+    void print(uint32_t lambda, uint32_t n, uint32_t ans, double deviation)
     {
         fout << std::setw(offset) << lambda << std::setw(offset) << n << std::setw(
                  offset) << ans << std::setw(offset) << deviation << std::endl;
     }
 
-    void add()
+    void print()
     {
         fout << std::endl;
     }
 
-    ~resultsTable()
-    {
-        fout.close();
-    }
+    uint toPrintNextLambda;
+    uint toPrintNextN;
 
-private:
+    std::string fileName;
     std::ofstream fout;
     const uint32_t offset;
+    std::mutex data_mtx;
+    /* results[lambda][n] = <evaluations, deviation> */
+    std::unordered_map <uint, std::unordered_map<uint, std::pair<uint, double>>> results;
 };
 
-using uint = uint32_t;
-
-const uint N_BEGIN = 10000;
-const uint N_END = 100000;
-const uint N_STEP = 10000;
-
-const uint LAMBDA_BEGIN = 200;
-const uint LAMBDA_END = 200;
-const uint LAMBDA_STEP = 1;
-
-const uint TESTS = 100;
 
 void generate(std::vector<bool> &x)
 {
@@ -74,8 +116,9 @@ void generate(std::vector<bool> &x)
         x[i] = static_cast<bool>(dis(gen));
 }
 
-template <typename F>
-uint32_t average(F f, uint32_t n, uint32_t lambda, resultsTable &table)
+using oneMax_t = uint32_t (const std::vector<bool> &, uint32_t);
+
+uint32_t average(oneMax_t *f, uint32_t n, uint32_t lambda, ResultsTable *table)
 {
     uint32_t ans = 0;
     std::vector<double> t;
@@ -86,51 +129,67 @@ uint32_t average(F f, uint32_t n, uint32_t lambda, resultsTable &table)
         uint32_t ti = f(offs, lambda);
         ans += ti;
         t.push_back(static_cast<double>(ti));
-
-        if (test % 25 == 0)
-            LOG("Passed test № ", test, "for lambda = ", lambda, " for n = ", n);
     }
     ans /= TESTS;
-    table.add(lambda, n, ans, getStandartDeviation(ans, t));
+    table->add(lambda, n, ans, getStandartDeviation(ans, t));
+    table->printResults();
     return ans;
 }
 
-template <typename F>
-void measure(F f, resultsTable &table, MainWindow &w, QColor graphColor,
-             const char *nameOfGraphLine, uint32_t lambda)
+void measure(oneMax_t *f, ResultsTable &table, uint32_t lambda, const char *nameOfGraphLine,
+             size_t threadsAmount = 0)
 {
     LOG("\n");
     LOG("Started line: ", nameOfGraphLine);
     LOG("\n");
 
-    std::vector<std::pair<uint32_t, uint32_t>> prob;
-    for (uint32_t n = N_BEGIN; n <= N_END; n += N_STEP)
+    if (threadsAmount == 0)
     {
-        uint32_t ans = average(f, n, lambda, table);
-        prob.push_back(std::make_pair(n, ans));
-        LOG("Done for lambda = ", lambda, ", n = ", n, ", for line: ", nameOfGraphLine);
+        for (uint i = N_BEGIN; i <= N_END; i += N_STEP)
+            average(f, i, lambda, &table);
+        LOG("Done for lambda = ", lambda, ", for line: ", nameOfGraphLine);
     }
-    table.add();
-    LOG("Done for lambda = ", lambda, ", for line: ", nameOfGraphLine);
-    w.addNewGraph(prob, graphColor, nameOfGraphLine);
+    else
+    {
+        std::vector<std::thread> ths(threadsAmount);
+        uint curTask = N_BEGIN;
+        while (curTask <= N_END)
+        {
+            size_t buzy = 0;
+            for (auto &t : ths)
+            {
+                if (curTask > N_END) break;
+                t = std::thread(average, f, curTask, lambda, &table);
+                ++buzy;
+                curTask += N_STEP;
+            }
+            for (size_t i = 0; i != buzy; ++i)
+                ths[i].join();
+        }
+        LOG("Done for lambda = ", lambda, ", for line: ", nameOfGraphLine);
+    }
 }
 
-int main(int argc, char *argv[])
+int main()
 {
-    QApplication a(argc, argv);
-    MainWindow w;
+    auto start = std::chrono::steady_clock::now();
 
-    resultsTable table("resultsStatic.txt", 25);
-    resultsTable tableAdjusting("resultsAdjusting.txt", 25);
+    ResultsTable table("resultsStatic.txt", 25);
+    ResultsTable tableAdj("resultsAdjusting.txt", 25);
 
     for (uint32_t lambda = LAMBDA_BEGIN; lambda <= LAMBDA_END; lambda += LAMBDA_STEP)
     {
-        measure(staticMutationProbability::fast::oneMax, table, w, Qt::blue, "Static Mutation Probability",
-                lambda);
-        measure(adjustingMutationProbabilityWithTwoOffsprings::fast::oneMax, tableAdjusting, w, Qt::red,
-                "Adjusting Mutation Probability", lambda);
-        w.saveGraphPng(lambda);
-        w.removeAllGraphs();
+        measure(&staticMutationProbability::fast::oneMax, table, lambda, "Static Mutation Probability", 10);
+        measure(&adjustingMutationProbabilityWithTwoOffsprings::fast::oneMax, tableAdj, lambda,
+                "Adjusting Mutation Probability", 10);
     }
+
+    table.printResults();
+    tableAdj.printResults();
+
+    auto end = std::chrono::steady_clock::now();
+    auto diff = end - start;
+    LOG("time : ", std::chrono::duration <double, std::milli> (diff).count() / 1000., " secs");
+
     return 0;
 }
