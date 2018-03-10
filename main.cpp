@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <chrono>
 #include <boost/asio/thread_pool.hpp>
-#include <boost/asio.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/dynamic_bitset.hpp>
 
 const uint N_BEGIN = 10000;
@@ -23,7 +23,7 @@ const uint LAMBDA_BEGIN = 800;
 const uint LAMBDA_END = 1600;
 const uint LAMBDA_STEP = 800;
 
-const uint TESTS = 100;
+const uint TESTS = 10;
 
 using uint = uint32_t;
 
@@ -128,9 +128,6 @@ void average(oneMax_t *f, uint32_t n, uint32_t lambda, ResultsTable *table)
     {
         generate(offs, gen);
         uint32_t ti = f(offs, lambda);
-        #ifndef NDEBUG
-        assert(offs.count() == offs.size());
-        #endif
         ans += ti;
         t.push_back(static_cast<double>(ti));
     }
