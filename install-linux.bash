@@ -23,6 +23,7 @@ cd boost_1_66_0
 sudo ./bootstrap.sh --prefix=/usr/local --with-libraries=system > /dev/null
 echo "Installation ..."
 sudo ./b2 install > /dev/null
+cd ..
 
 sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
 sudo apt-get update -qq
