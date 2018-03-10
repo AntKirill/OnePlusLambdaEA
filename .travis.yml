@@ -12,14 +12,8 @@ compiler:
 env:
     - TARGET_CPU=amd64 BUILD_CONFIGURATION=Release
 
-# install:
-#     - source install-linux.bash
+install:
+    - source install-linux.bash
 
 script:
-    - cd build
-    - travis_wait 1000000 ./run
-    - echo "Results Static"
-    - cat resultsStatic.txt
-    - echo "Results Adjusting"
-    - cat resultsAdjusting.txt
-
+    - mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=RELEASE .. && make

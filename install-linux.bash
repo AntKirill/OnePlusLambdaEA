@@ -19,7 +19,7 @@ export PATH=$CMAKE_DIR/bin:$PATH
 
 wget boost_1_66_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.66.0/boost_1_66_0.tar.gz/download
 tar xzvf boost_1_66_0.tar.gz
-./boost_1_66_0/bootstrap.sh --with-libraries=system
+./boost_1_66_0/bootstrap.sh
 ./boost_1_66_0/b2 link=shared threading=multi variant=release
 
 sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
