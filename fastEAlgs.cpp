@@ -1,20 +1,51 @@
 #include "fastEAlgs.h"
 #include "probability_t.h"
 #include "math.h"
-#include "random"
 #include <iostream>
-#include <limits>
-#include <array>
-#include "thread"
+#include <cassert>
+#include "logger.h"
+#include "fast_random.h"
+#include <boost/dynamic_bitset.hpp>
+#include <vector>
 
-static const size_t N = 1000010;
+struct offspring_t;
+
+struct NextIndexGetter;
+
+template <typename T>
+struct growing_vector
+{
+    growing_vector(size_t beg_size) : wrapped(beg_size) {}
+    void reset() { buzy = 0; }
+    void my_push_back(T x)
+    {
+        if (buzy < wrapped.size()) wrapped[buzy++] = x;
+        else { wrapped.push_back(x); ++buzy;}
+    }
+    const T &operator[](size_t i) const
+    {
+        return wrapped[i];
+    }
+    T &operator [](size_t i)
+    {
+        return wrapped[i];
+    }
+    void swap(growing_vector &rhs)
+    {
+        wrapped.swap(rhs.wrapped);
+        std::swap(buzy, rhs.buzy);
+    }
+    std::vector<T> wrapped;
+    size_t buzy = 0;
+};
+
 
 struct offspring_patch_t
 {
-    std::vector<uint> toChange;
     uint fit;
     probability_t p;
-    offspring_patch_t(uint fit, const probability_t &p) : toChange(0), fit(fit), p(p) {}
+    growing_vector<uint> toChange;
+    offspring_patch_t(uint fit, const probability_t &p) : fit(fit), p(p), toChange(10) {}
 };
 
 struct offspring_t
@@ -28,13 +59,13 @@ struct offspring_t
         fit = oneMaxFitness(bits);
     }
 
-    offspring_t(const boost::dynamic_bitset<> &bits, uint fit, const probability_t &p) : bits(bits), fit(fit),
+    offspring_t(const boost::dynamic_bitset<> &bits, uint fit, const probability_t &p) : bits(bits),
+        fit(fit),
         p(p) {}
 
     offspring_t &operator=(const offspring_patch_t &rhs_patch)
     {
-        for (auto i : rhs_patch.toChange)
-            bits[i] = !bits[i];
+        for (size_t i = 0; i < rhs_patch.toChange.buzy; ++i) bits.flip(rhs_patch.toChange[i]);
         fit = rhs_patch.fit;
         p = rhs_patch.p;
         return *this;
@@ -58,31 +89,28 @@ double oneMinus(const probability_t &p)
 
 struct NextIndexGetter
 {
-    NextIndexGetter() : gen(rd()) {}
-    uint get(int ind, double log1prob)
+    NextIndexGetter() = default;
+    uint get(uint ind, double log1prob)
     {
-        std::uniform_real_distribution<double> dis(0, 1);
-        double r = dis(gen);
-        uint k = static_cast<uint>(ind + 1);
-        return k + static_cast<uint>(floor(log(r) / log1prob));
+        double r = engine.random01();
+        uint k = ind + 1;
+        double p = log(r);
+        return k + static_cast<uint>(floor(p / log1prob));
     }
 private:
-    std::random_device rd;
-    std::mt19937 gen;
+    utils::fast_random engine;
 };
 
-static bool mutation(const offspring_t &curParrent, NextIndexGetter &getter,
-                     offspring_patch_t &patch, const probability_t &p, uint &curChildrenFit)
+bool mutation(const offspring_t &curParrent, NextIndexGetter &getter,
+              offspring_patch_t &patch, growing_vector<uint> &tmp, const probability_t &p, uint &curChildrenFit, double log1prob)
 {
-    double log1prob = log(oneMinus(p));
     uint ind = getter.get(-1, log1prob);
-    std::vector<uint> curToChange;
 
     while (ind < curParrent.bits.size())
     {
-        if (curParrent.bits[ind]) --curChildrenFit;
+        if (curParrent.bits.test(ind)) --curChildrenFit;
         else ++curChildrenFit;
-        curToChange.push_back(ind);
+        tmp.my_push_back(ind);
         ind = getter.get(ind, log1prob);
     }
 
@@ -90,10 +118,11 @@ static bool mutation(const offspring_t &curParrent, NextIndexGetter &getter,
     if (curChildrenFit >= patch.fit)
     {
         patch.fit = curChildrenFit;
-        patch.toChange.swap(curToChange);
+        patch.toChange.swap(tmp);
         patch.p = p;
         updated = true;
     }
+    tmp.reset();
     return updated;
 }
 
@@ -104,18 +133,28 @@ uint staticMutationProbability::fast::oneMax(const boost::dynamic_bitset<> &bits
     probability_t p(n);
     auto x = offspring_t(bits, p);
     uint ans = 0;
+    offspring_patch_t patch(x.fit, p);
+    growing_vector<uint> tmp(10);
+    double log1prob = log(oneMinus(p));
 
     while (x.fit != n)
     {
-        offspring_patch_t patch(x.fit, p);
         for (uint i = 0; i < lambda; ++i)
         {
             uint condidateFit = x.fit;
-            mutation(x, getter, patch, p, condidateFit);
+            mutation(x, getter, patch, tmp, p, condidateFit, log1prob);
         }
         x = patch;
         ans += lambda;
+        patch.toChange.reset();
     }
+    #ifndef NDEBUG
+    if (x.bits.count() != x.bits.size())
+    {
+        LOG("Expected bits amount : ", x.bits.size(), " found : ", x.bits.count());
+        assert(false);
+    }
+    #endif
     return ans;
 }
 
@@ -134,12 +173,17 @@ oneMax(const boost::dynamic_bitset<> &bits, uint lambda)
     probability_t pBest(n);
 
     NextIndexGetter getter;
-    auto doMutation = [&](bool & wasUpdate, uint & delta, uint from, uint to, offspring_patch_t &patch)
+
+    offspring_patch_t patch(x.fit, x.p);
+    growing_vector<uint> tmp(10);
+
+    auto doMutation = [&](bool & wasUpdate, uint & delta, uint from, uint to)
     {
+        double log1prob = log(oneMinus(p));
         for (uint i = from; i < to; ++i)
         {
             uint condidateFit = x.fit;
-            bool updated = mutation(x, getter, patch, p, condidateFit);
+            bool updated = mutation(x, getter, patch, tmp, p, condidateFit, log1prob);
             if (!updated && (delta > x.fit - condidateFit))
             {
                 delta = x.fit - condidateFit;
@@ -151,13 +195,12 @@ oneMax(const boost::dynamic_bitset<> &bits, uint lambda)
 
     while (x.fit != n)
     {
-        offspring_patch_t patch(x.fit, x.p);
         bool wasUpdate = false;
         uint delta = n + 1;
         p *= 2;
-        doMutation(wasUpdate, delta, 0, halflambda, patch);
+        doMutation(wasUpdate, delta, 0, halflambda);
         p /= 4;
-        doMutation(wasUpdate, delta, halflambda, lambda, patch);
+        doMutation(wasUpdate, delta, halflambda, lambda);
         if (wasUpdate)
         {
             x = patch;
@@ -167,6 +210,14 @@ oneMax(const boost::dynamic_bitset<> &bits, uint lambda)
         else if (half()) p *= 4;
         p = std::min(std::max(p1, p), p2);
         ans += lambda;
+        patch.toChange.reset();
     }
+    #ifndef NDEBUG
+    if (x.bits.count() != x.bits.size())
+    {
+        LOG("Expected bits amount : ", x.bits.size(), " found : ", x.bits.count());
+        assert(false);
+    }
+    #endif
     return ans;
 }

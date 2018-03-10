@@ -1,7 +1,6 @@
 #ifndef FASTEALGS_H
 #define FASTEALGS_H
 
-#include <vector>
 #include <stdint.h>
 #include <boost/dynamic_bitset.hpp>
 
