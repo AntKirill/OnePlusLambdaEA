@@ -1,5 +1,4 @@
 #include "fastEAlgs.h"
-#include "probability_t.h"
 #include "math.h"
 #include <iostream>
 #include <cassert>
@@ -7,6 +6,7 @@
 #include "fast_random.h"
 #include <boost/dynamic_bitset.hpp>
 #include <vector>
+#include "probability_t.h"
 
 struct offspring_t;
 
@@ -84,7 +84,7 @@ static inline double logn(double base, double r)
 
 double oneMinus(const probability_t &p)
 {
-    return static_cast<double>(p.n - p.m) / static_cast<double>(p.n);
+    return 1 - p.p;
 }
 
 struct NextIndexGetter
@@ -161,8 +161,8 @@ uint staticMutationProbability::fast::oneMax(const boost::dynamic_bitset<> &bits
 uint adjustingMutationProbabilityWithTwoOffsprings::fast::
 oneMax(const boost::dynamic_bitset<> &bits, uint lambda)
 {
-    static const probability_t half(2);
-    static const probability_t p2(4);
+    probability_t half(2);
+    probability_t p2(4);
 
     uint n = static_cast<uint>(bits.size());
     const probability_t p1(n / 2);

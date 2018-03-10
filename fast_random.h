@@ -44,6 +44,17 @@ namespace utils
             for (int i = 0; i < 2; ++i) state[i] = dis(gen);
         }
 
+        fast_random(const fast_random &rhs) :  Max(static_cast<ldbl>(std::numeric_limits<uint64_t>::max()))
+        {
+            *this = rhs;
+        }
+
+        fast_random &operator=(const fast_random &rhs)
+        {
+            for (int i = 0; i < 2; ++i) state[i] = rhs.state[i];
+            return *this;
+        }
+
         double random01() { return static_cast<ldbl>(xorshift128Plus()) / Max; }
 
     };

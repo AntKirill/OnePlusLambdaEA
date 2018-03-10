@@ -15,13 +15,13 @@
 #include <boost/asio/post.hpp>
 #include <boost/dynamic_bitset.hpp>
 
-const uint N_BEGIN = 10000;
-const uint N_END = 100000;
-const uint N_STEP = 10000;
+const uint N_BEGIN = 100;
+const uint N_END = 1000;
+const uint N_STEP = 100;
 
-const uint LAMBDA_BEGIN = 800;
-const uint LAMBDA_END = 1600;
-const uint LAMBDA_STEP = 800;
+const uint LAMBDA_BEGIN = 2;
+const uint LAMBDA_END = 4;
+const uint LAMBDA_STEP = 1;
 
 const uint TESTS = 10;
 

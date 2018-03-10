@@ -2,32 +2,23 @@
 #define PROBABILITY_T_H
 
 #include <stdint.h>
+#include <random>
+#include "fast_random.h"
 
 struct probability_t
 {
-
-    probability_t() {}
-
-    probability_t(uint32_t n) : m(1), n(n) {}
-
-    // returns true with this probability
-    bool operator()() const;
-
-    probability_t &operator/=(uint32_t k);
-
-    probability_t &operator*=(uint32_t k);
-
+    probability_t() = default;
+    probability_t(uint32_t n) : p(1. / static_cast<double>(n)) {}
+    probability_t(const probability_t &rhs);
+    bool operator ()();
+    probability_t &operator/=(double k);
+    probability_t &operator*=(double k);
     probability_t &operator=(const probability_t &rhs);
-
     bool operator<(const probability_t &rhs) const;
-
-
 private:
-    // this probability = m / n;
-
+    utils::fast_random engine;
     friend double oneMinus(const probability_t &p);
-    uint32_t m;
-    uint32_t n;
+    double p;
 };
 
 #endif // PROBABILITY_T_H
