@@ -18,7 +18,7 @@ tar --strip-components=1 -xzf $CMAKE_TAR -C $CMAKE_DIR
 export PATH=$CMAKE_DIR/bin:$PATH
 
 wget boost_1_66_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.66.0/boost_1_66_0.tar.gz/download -O boost_1_66_0.tar.gz
-tar xzvf boost_1_66_0.tar.gz
+tar xzvf boost_1_66_0.tar.gz > /dev/null
 cd boost_1_66_0
 sudo ./bootstrap.sh --prefix=/usr/local --with-libraries=system > /dev/null
 echo "Installation ..."
