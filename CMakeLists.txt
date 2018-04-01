@@ -7,7 +7,4 @@ set(CMAKE_CXX_FLAGS "-pthread -Wall -Wextra -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O4")
 
-message("${CMAKE_BUILD_TYPE}")
-message("hello")
-
 add_subdirectory(src)

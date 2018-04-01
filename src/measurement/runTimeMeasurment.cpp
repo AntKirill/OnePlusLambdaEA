@@ -17,12 +17,12 @@
 
 using uint = uint32_t;
 
-const uint N_BEGIN = 10000;
-const uint N_END = 100000;
-const uint N_STEP = 10000;
+const uint N_BEGIN = 100;
+const uint N_END = 1000;
+const uint N_STEP = 100;
 
-const uint LAMBDA_BEGIN = 800;
-const uint LAMBDA_END = 800;
+const uint LAMBDA_BEGIN = 3;
+const uint LAMBDA_END = 10;
 const uint LAMBDA_STEP = 1;
 
 const uint TESTS = 10;
@@ -100,8 +100,8 @@ int main()
 
     std::vector<std::pair<std::shared_ptr<OnePlusLambdaSolver>, ResultsTable *>> fts =
     {
-//        {std::make_shared<StaticParamsSolver>(StaticParamsSolver(std::vector<double>())), &tableStatic},
-//        {std::make_shared<AdjustingParamsSolver<2>>(AdjustingParamsSolver<2>({0.5, 2.})), &tableAdjTwo},
+        {std::make_shared<StaticParamsSolver>(StaticParamsSolver(std::vector<double>())), &tableStatic},
+        {std::make_shared<AdjustingParamsSolver<2>>(AdjustingParamsSolver<2>({0.5, 2.})), &tableAdjTwo},
         {std::make_shared<AdjustingParamsSolver<3>>(AdjustingParamsSolver<3>({2., 1., 0.5})), &tableAdjThree}
     };
 
