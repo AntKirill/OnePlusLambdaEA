@@ -1,0 +1,6 @@
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+find_package(Boost 1.66.0 COMPONENTS system REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+add_executable(runTimeMeasurement "runTimeMeasurment.cpp" "resultsTable.cpp")
+target_link_libraries(runTimeMeasurement oneMaxSolvers ${Boost_LIBRARIES})

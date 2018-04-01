@@ -1,0 +1,5 @@
+include_directories(utils onePlusLambdaSolvers)
+add_subdirectory(utils)
+add_subdirectory(chartBuilding)
+add_subdirectory(onePlusLambdaSolvers)
+add_subdirectory(measurement)
