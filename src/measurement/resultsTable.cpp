@@ -2,10 +2,15 @@
 #include <iostream>
 #include <iomanip>
 #include "logger.h"
+#include <cassert>
+#include <iterator>
 
-ResultsTable::ResultsTable(const std::string &fileName,
-                           uint32_t offset) : toPrintNextLambda(LAMBDA_BEGIN),
-    toPrintNextN(N_BEGIN), fileName(fileName), fout(fileName), offset(offset)
+ResultsTable::ResultsTable(const std::string &fileName, uint32_t offset,
+                           const ParsedParams &params) :
+    toPrintNextLambda(params.lambda[0]), toPrintNextN(params.n[0]),
+    fileName(fileName), fout(fileName), offset(offset),
+    N_BEGIN(params.n[0]), N_END(params.n[1]), N_STEP(params.n[2]),
+    LAMBDA_BEGIN(params.lambda[0]), LAMBDA_END(params.lambda[1]), LAMBDA_STEP(params.lambda[2])
 {
     fout << std::setw(offset) << "lambda" << std::setw(offset) << "n" << std::setw(
              offset) << "function evaluations" << std::setw(offset) << "standard deviation" << std::endl;
@@ -16,7 +21,7 @@ void ResultsTable::add(uint lambda, uint n, uint evoluations, double deviation)
 {
     data_mtx.lock();
     results[lambda][n] = std::make_pair(evoluations, deviation);
-    LOG("Done for lambda = ", lambda, ", n = ", n, ", for line: ", fileName);
+    LOG("Done for lambda =", lambda, ", n =", n, ", for file:", fileName);
     data_mtx.unlock();
 }
 

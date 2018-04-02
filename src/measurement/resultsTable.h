@@ -4,21 +4,11 @@
 #include <unordered_map>
 #include <mutex>
 #include <fstream>
-
-extern const uint N_BEGIN;
-extern const uint N_END;
-extern const uint N_STEP;
-
-extern const uint LAMBDA_BEGIN;
-extern const uint LAMBDA_END;
-extern const uint LAMBDA_STEP;
-
-extern const uint TESTS;
-
+#include "configParser.h"
 
 struct ResultsTable
 {
-    ResultsTable(const std::string &fileName, uint32_t offset);
+    ResultsTable(const std::string &fileName, uint32_t offset, const ParsedParams &params);
 
     void add(uint lambda, uint n, uint evoluations, double deviation);
 
@@ -40,4 +30,10 @@ private:
     std::mutex data_mtx;
     /* results[lambda][n] = <evaluations, deviation> */
     std::unordered_map <uint, std::unordered_map<uint, std::pair<uint, double>>> results;
+    const uint32_t N_BEGIN;
+    const uint32_t N_END;
+    const uint32_t N_STEP;
+    const uint32_t LAMBDA_BEGIN;
+    const uint32_t LAMBDA_END;
+    const uint32_t LAMBDA_STEP;
 };
