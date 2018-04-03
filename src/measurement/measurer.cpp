@@ -4,7 +4,7 @@
 #include <onePlusLambdaSolver.h>
 #include "adjustingParamsSolver.h"
 #include "staticParamsSolver.h"
-#include "resultsTable.h"
+#include "resultsTablePrinter.h"
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/dynamic_bitset.hpp>
@@ -31,7 +31,7 @@ double Measurer::getStandartDeviation(uint32_t ans, const std::vector<double> &t
 
 void Measurer::average(const std::shared_ptr<OnePlusLambdaSolver> &solver_ptr, uint32_t n,
                        uint32_t lambda,
-                       ResultsTable *table) const
+                       ResultsTablePrinter *table) const
 {
     uint32_t ans = 0;
     std::vector<double> t;
@@ -52,7 +52,7 @@ void Measurer::average(const std::shared_ptr<OnePlusLambdaSolver> &solver_ptr, u
 }
 
 void Measurer::pool_all(const std::vector <
-                        std::pair<std::shared_ptr<OnePlusLambdaSolver>, ResultsTable * >> &fts,
+                        std::pair<std::shared_ptr<OnePlusLambdaSolver>, ResultsTablePrinter * >> &fts,
                         size_t threadsAmount) const
 {
     boost::asio::thread_pool pool(threadsAmount);
@@ -76,11 +76,11 @@ void Measurer::run()
 
     LOG("Used params:\n", params);
 
-    ResultsTable tableStatic("resultsStatic.txt", 25, params);
-    ResultsTable tableAdjTwo("resultsAdjusting.txt", 25, params);
-    ResultsTable tableAdjThree("resultsSelfAdjustingThree.txt", 25, params);
+    ResultsTablePrinter tableStatic("resultsStatic.txt", 25, params);
+    ResultsTablePrinter tableAdjTwo("resultsAdjusting.txt", 25, params);
+    ResultsTablePrinter tableAdjThree("resultsSelfAdjustingThree.txt", 25, params);
 
-    std::vector<std::pair<std::shared_ptr<OnePlusLambdaSolver>, ResultsTable *>> fts =
+    std::vector<std::pair<std::shared_ptr<OnePlusLambdaSolver>, ResultsTablePrinter *>> fts =
     {
 //        {std::make_shared<StaticParamsSolver>(StaticParamsSolver(std::vector<double>())), &tableStatic},
 //        {std::make_shared<AdjustingParamsSolver<2>>(AdjustingParamsSolver<2>({2., 0.5})), &tableAdjTwo},

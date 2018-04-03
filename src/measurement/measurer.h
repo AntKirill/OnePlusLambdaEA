@@ -5,7 +5,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <random>
 #include "onePlusLambdaSolver.h"
-#include "resultsTable.h"
+#include "resultsTablePrinter.h"
 
 class Measurer
 {
@@ -13,9 +13,9 @@ class Measurer
     void generate(boost::dynamic_bitset<> &x, std::mt19937 &engine) const;
     double getStandartDeviation(uint32_t ans, const std::vector<double> &t) const;
     void average(const std::shared_ptr<OnePlusLambdaSolver> &solver_ptr, uint32_t n, uint32_t lambda,
-                 ResultsTable *table) const;
+                 ResultsTablePrinter *table) const;
     void pool_all(const std::vector <
-                  std::pair<std::shared_ptr<OnePlusLambdaSolver>, ResultsTable * >> &fts,
+                  std::pair<std::shared_ptr<OnePlusLambdaSolver>, ResultsTablePrinter * >> &fts,
                   size_t threadsAmount) const;
 
     const uint32_t N_BEGIN;
