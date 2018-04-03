@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
     }
 
     auto results = utils::parseResultsFiles(files);
-    std::pair<uint, uint> minMaxN;
-    std::pair<uint, uint> minMaxAmount;
+    std::pair<uint, uint> minMaxN = {std::numeric_limits<uint>::max(), 0};
+    std::pair<uint, uint> minMaxAmount = {std::numeric_limits<uint>::max(), 0};
     auto update = [](std::pair<uint, uint> oldMinMax,
                      std::pair<uint, uint> newMinMaxN) -> std::pair<uint, uint>
     {
