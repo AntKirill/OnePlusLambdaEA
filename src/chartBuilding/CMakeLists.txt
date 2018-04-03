@@ -9,5 +9,5 @@ include_directories(thirdParty)
 add_subdirectory(thirdParty)
 
 add_executable(chartBuilding chart_builder_main.cpp mainwindow.cpp)
-target_link_libraries(chartBuilding qcustomplot Qt5::Widgets Qt5::PrintSupport)
+target_link_libraries(chartBuilding qcustomplot resultsScanner Qt5::Widgets Qt5::PrintSupport)
 
