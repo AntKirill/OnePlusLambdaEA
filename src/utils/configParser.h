@@ -12,8 +12,8 @@
 struct ParsedParams
 {
     std::vector<double> selfAdjParams = {2., 1., 0.5};
-    std::array<uint32_t, 3> lambda = {3, 10, 1}; //0: begin, 1: end, 2: step
-    std::array<uint32_t, 3> n = {100, 1000, 100}; //0: begin, 1: end, 2: step
+    std::array<uint32_t, 3> lambda = {{3, 10, 1}}; //0: begin, 1: end, 2: step
+    std::array<uint32_t, 3> n = {{100, 1000, 100}}; //0: begin, 1: end, 2: step
     uint32_t tests = 10;
     ParsedParams() : selfAdjParams(3, 0) {}
 };
