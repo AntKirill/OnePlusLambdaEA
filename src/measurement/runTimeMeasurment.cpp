@@ -4,9 +4,9 @@
 
 int main(int argc, char *argv[])
 {
-    ParsedParams params;
     if (argc == 1)
     {
+        ParsedParams params;
         params.n[0] = 100;
         params.n[1] = 1000;
         params.n[2] = 100;
@@ -15,14 +15,16 @@ int main(int argc, char *argv[])
         params.lambda[2] = 1;
         params.tests = 10;
         params.selfAdjParams = {2., 1., 0.5};
+        Measurer m(std::make_shared<const ParsedParams>(params));
+        m.run();
     }
     else
     {
         ConfigParser parser(argv[1]);
-        params = parser.parse();
+        auto params = parser.parse();
+        Measurer m(params);
+        m.run();
     }
-    Measurer m(params);
-    m.run();
 
     return 0;
 }

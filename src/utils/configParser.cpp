@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 
 void ConfigParser::parseSelfAdj(const std::string &)
 {
@@ -40,23 +41,36 @@ void ConfigParser::parseTests(const std::string &)
     params.tests = d;
 }
 
+void ConfigParser::parseAlgos(const std::string &)
+{
+    std::string s;
+    std::getline(fin, s);
+    boost::trim(s);
+    std::vector<std::string> tokens;
+    boost::split(tokens, s, boost::is_any_of(" "), boost::token_compress_on);
+    params.wantedAlgos[tokens[0]] = tokens[1];
+}
+
 ConfigParser::ConfigParser(const std::string &fileName)
 {
     fin.open(fileName);
 }
 
-ParsedParams ConfigParser::parse()
+std::shared_ptr<const ParsedParams> ConfigParser::parse()
 {
-    if (!fin.good()) return params;
+    if (!fin.good()) return std::make_shared<const ParsedParams>(params);
     std::string s;
     while (fin >> s)
+    {
         if (validHeaders.count(s))
         {
             const call_back_t f = validHeaders.at(s);
             (this->*f)(s);
         }
+        else std::getline(fin, s);
+    }
     std::sort(params.selfAdjParams.begin(), params.selfAdjParams.end(), [](double a, double b) { return b < a; });
-    return params;
+    return std::make_shared<const ParsedParams>(params);
 }
 
 ConfigParser::~ConfigParser()

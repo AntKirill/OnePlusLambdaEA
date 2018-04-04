@@ -9,11 +9,15 @@ struct ResultsTablePrinter : ResultsTable
 {
     ResultsTablePrinter(const std::string &fileName, uint32_t offset, const ParsedParams &params);
 
+    ResultsTablePrinter(const std::string &fileName,
+                        const ParsedParams &params) : ResultsTablePrinter(fileName, 25, params) {}
+
     void add(uint lambda, uint n, uint evoluations, double deviation);
 
     void printResults();
 
     ~ResultsTablePrinter() { fout.close(); }
+
 private:
 
     void print(uint32_t lambda, uint32_t n, uint32_t ans, double deviation);

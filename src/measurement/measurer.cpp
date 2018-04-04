@@ -8,7 +8,7 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/dynamic_bitset.hpp>
-
+#include <solversFabric.h>
 void Measurer::generate(boost::dynamic_bitset<> &x, std::mt19937 &engine) const
 {
     std::uniform_int_distribution<> dis(0, 1);
@@ -52,7 +52,7 @@ void Measurer::average(const std::shared_ptr<OnePlusLambdaSolver> &solver_ptr, u
 }
 
 void Measurer::pool_all(const std::vector <
-                        std::pair<std::shared_ptr<OnePlusLambdaSolver>, ResultsTablePrinter * >> &fts,
+                        std::pair<std::shared_ptr<OnePlusLambdaSolver>, std::shared_ptr<ResultsTablePrinter> >> &fts,
                         size_t threadsAmount) const
 {
     boost::asio::thread_pool pool(threadsAmount);
@@ -62,7 +62,7 @@ void Measurer::pool_all(const std::vector <
         {
             for (uint i = N_BEGIN; i <= N_END; i += N_STEP)
             {
-                auto task = std::bind(&Measurer::average, this, f.first, i, lambda, f.second);
+                auto task = std::bind(&Measurer::average, this, f.first, i, lambda, f.second.get());
                 boost::asio::post(pool, task);
             }
         }
@@ -74,18 +74,10 @@ void Measurer::run()
 {
     auto start = std::chrono::steady_clock::now();
 
-    LOG("Used params:\n", params);
+    LOG("Used params:\n", *params.get());
 
-    ResultsTablePrinter tableStatic("resultsStatic.txt", 25, params);
-    ResultsTablePrinter tableAdjTwo("resultsAdjusting.txt", 25, params);
-    ResultsTablePrinter tableAdjThree("resultsSelfAdjustingThree.txt", 25, params);
-
-    std::vector<std::pair<std::shared_ptr<OnePlusLambdaSolver>, ResultsTablePrinter *>> fts =
-    {
-//        {std::make_shared<StaticParamsSolver>(StaticParamsSolver(std::vector<double>())), &tableStatic},
-//        {std::make_shared<AdjustingParamsSolver<2>>(AdjustingParamsSolver<2>({2., 0.5})), &tableAdjTwo},
-        {std::make_shared<AdjustingParamsSolver<3>>(AdjustingParamsSolver<3>(params.selfAdjParams)), &tableAdjThree}
-    };
+    SolversFabric fabric(params);
+    auto fts = fabric.getAlgos();
 
     pool_all(fts, 8);
 
@@ -93,5 +85,5 @@ void Measurer::run()
 
     auto end = std::chrono::steady_clock::now();
     LOG("time : ", std::chrono::duration <double, std::milli> (end - start).count() / 1000., " secs");
-    LOG("Used params:\n", params);
+    LOG("Used params:\n", *params.get());
 }

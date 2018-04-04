@@ -18,9 +18,9 @@ int main(int argc, char *argv[])
         configs = argv[1];
     }
     ConfigParser parser(configs);
-    ParsedParams params = parser.parse();
+    std::shared_ptr<const ParsedParams> params = parser.parse();
     ofstream fout(info);
     fout << "selfAdjParams: ";
-    for (auto i : params.selfAdjParams) fout << i << " ";
+    for (auto i : params->selfAdjParams) fout << i << " ";
     fout << endl;
 }
