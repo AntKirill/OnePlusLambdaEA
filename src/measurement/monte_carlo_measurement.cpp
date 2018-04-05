@@ -28,7 +28,15 @@ int main()
         params.selfAdjParams = {dis1(gen), 1., dis2(gen)};
         Measurer m(std::make_shared<const ParsedParams>(params));
         m.run();
-        system("addParam");
+        {
+            int ret;
+            ret = system("addParam");
+            if (ret != 0)
+            {
+                LOG(ret);
+                std::cerr << "Failed" << std::endl;
+            }
+        }
     }
     return 0;
 }

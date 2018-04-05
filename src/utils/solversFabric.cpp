@@ -5,11 +5,6 @@
 #include <string>
 #include "logger.h"
 
-namespace
-{
-    using Abstractptr = std::shared_ptr<OnePlusLambdaSolver>;
-}
-
 SolversFabric::SolversFabric(const std::shared_ptr<const ParsedParams> &params) : params(params)
 {}
 
@@ -31,8 +26,7 @@ SolversFabric::SolverPtr SolversFabric::init_adj3() const
 
 SolversFabric::AlgTablePtrsVector SolversFabric::getAlgos() const
 {
-    std::vector<std::pair<std::shared_ptr<OnePlusLambdaSolver>, std::shared_ptr<ResultsTablePrinter>>>
-    ans;
+    SolversFabric::AlgTablePtrsVector ans;
     for (const auto &s : params->wantedAlgos)
     {
         if (validAlgos.count(s.first))
