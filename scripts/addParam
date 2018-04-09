@@ -1,0 +1,21 @@
+#!/bin/bash
+
+me=$(pwd)
+directory=$HOME/Projects/Practice/resultsParams2
+
+amountOfSubdirs=$(ls -l $directory | grep -c ^d)
+newSubDir=$directory/"$(($amountOfSubdirs + 1))"
+mkdir -p $newSubDir
+
+dumpParams dumpAdj.txt
+cp resultsSelfAdjustingThree.txt $newSubDir/
+mv info.txt $newSubDir/
+cd $newSubDir
+cp ../results* .
+chartBuilding results*
+graphs_difference resultsAdj* resultsSelfAdjustingThree.txt >> info.txt
+rm resultsStatic* resultsAdj*
+# xdg-open lambda*
+info=$(cat info.txt)
+cd $me
+echo "$info"

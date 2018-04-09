@@ -1,0 +1,58 @@
+#!/bin/bash
+
+me=$(pwd)
+directory=$HOME/Projects/Practice/resultsParams2
+
+dumpAllInfo()
+{
+	NEWLINE=$'\n'
+	for d in $(find $directory -maxdepth 1 -type d)
+	do
+	  if [ "$d" != "$directory" ]
+	  then
+	  	cd $d
+	  	if [ -e 'info.txt' ]
+	  	then
+	  		x=$(cat 'info.txt')
+	  		all="$all${NEWLINE}${x}${NEWLINE}"
+	  	else
+	  		echo $d
+	  	fi
+	  	cd ..
+	  fi
+	done
+	echo '-----------------------'
+	echo "$all"
+	cd $me
+}
+
+redrawGraphs()
+{
+	NEWLINE=$'\n'
+	dirs=$(find $directory -maxdepth 1 -type d)
+	for d in $dirs
+	do
+	  if [ "$d" != "$directory" ]
+	  then
+	  	cd $d
+	  	cp resultsSelfAdjustingThree.txt ..
+	  	cp ../results* .
+	  	chartBuilding results*
+	  	rm results*
+	  	mv ../resultsSelfAdjustingThree.txt .
+	  	cd ..
+	  	echo "done for directory: $d"
+	  fi
+	done
+	cd $me	
+}
+
+if [ "$1" == "dump" ]
+then
+	dumpAllInfo
+elif [ "$1" == "redraw" ]
+then
+	redrawGraphs
+else 
+	echo "unknown action: $1"
+fi
