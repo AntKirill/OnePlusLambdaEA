@@ -50,13 +50,11 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, uint
     {
         bool wasUpdate = false;
         uint delta = n + 1;
-//        probability_t save_prob(p);
         for (uint i = 0; i < segmlambda.size() - 1; ++i)
         {
             p *= params[i];
             doMutation(wasUpdate, delta, segmlambda[i], segmlambda[i + 1]);
             p /= params[i];
-//            p = save_prob;
         }
         if (wasUpdate)
         {
