@@ -1,0 +1,13 @@
+set(LIBS oneMaxSolvers measurer)
+
+add_library(common_search search_common.cpp)
+target_link_libraries(common_search metrics resultsScanner measurer)
+
+add_executable(monte_carlo_search monte_carlo_measurement.cpp)
+target_link_libraries(monte_carlo_search common_search)
+
+add_executable(sequential_search sequential_search.cpp)
+target_link_libraries(sequential_search common_search)
+
+add_subdirectory(measurement)
+include_directories(measurement)
