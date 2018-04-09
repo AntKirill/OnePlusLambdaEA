@@ -20,12 +20,14 @@ private:
     SolverPtr init_static() const;
     SolverPtr init_adj2() const;
     SolverPtr init_adj3() const;
+    SolverPtr init_thStatic() const;
 public:
     const std::unordered_map<std::string, callback_t> validAlgos =
     {
         {"St", &SolversFabric::init_static},
         {"A2", &SolversFabric::init_adj2},
-        {"A3", &SolversFabric::init_adj3}
+        {"A3", &SolversFabric::init_adj3},
+        {"ThStatic", &SolversFabric::init_thStatic}
     };
     AlgTablePtrsVector getAlgos() const;
 };

@@ -2,6 +2,7 @@
 #include "staticParamsSolver.h"
 #include "configParser.h"
 #include "adjustingParamsSolver.h"
+#include "theoryStaticParams.h"
 #include <string>
 #include "logger.h"
 
@@ -22,6 +23,11 @@ SolversFabric::SolverPtr SolversFabric::init_adj2() const
 SolversFabric::SolverPtr SolversFabric::init_adj3() const
 {
     return std::make_shared<AdjustingParamsSolver<3>>(params->selfAdjParams);
+}
+
+SolversFabric::SolverPtr SolversFabric::init_thStatic() const
+{
+    return std::make_shared<TheoryStaticParams>(std::vector<double>());
 }
 
 SolversFabric::AlgTablePtrsVector SolversFabric::getAlgos() const

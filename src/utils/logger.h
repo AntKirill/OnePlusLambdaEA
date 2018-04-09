@@ -20,6 +20,11 @@ struct tracer
     {
         out << file + _path_length << " : " << func << " : " << line << " : ";
     }
+    tracer(std::ostream &out) : out(out)
+    {
+        out << "---------------------------------------------------------" << std::endl;
+        out << std::endl;
+    }
     ~tracer()
     {
         out << std::endl;
@@ -46,9 +51,6 @@ struct tracer
 };
 
 #define LOG(...) tracer( std::cout, __FILE__, __LINE__, __func__ ).write( __VA_ARGS__ )
-
-#else
-
-#define LOG(...)
+#define SEP(...) tracer( std::cout )
 
 #endif // DEBUG_H

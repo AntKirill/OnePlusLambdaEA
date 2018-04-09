@@ -1,24 +1,11 @@
 #include <iostream>
 #include "resultsTableScanner.h"
+#include "metrics.h"
 #include <unordered_map>
 
 void printUsage()
 {
     std::cout << "First file - base results, second file - delta results";
-}
-
-using MPN = const std::unordered_map<uint, std::pair<uint, double>> &;
-
-int64_t norm(MPN mpn1, MPN mpn2)
-{
-    using intt = int64_t;
-    int64_t ans = 0;
-    for (const auto &itn1 : mpn1)
-    {
-        auto it2 = mpn2.find(itn1.first);
-        ans += static_cast<intt>(itn1.second.first) - static_cast<intt>(it2->second.first);
-    }
-    return ans;
 }
 
 int main(int argc, char * argv[])
@@ -38,7 +25,7 @@ int main(int argc, char * argv[])
         auto it = data2.find(mpLambda.first);
         if (it != data2.end())
         {
-            auto ans = norm(mpLambda.second, it->second);
+            auto ans = utils::metrics1(parsed[0], parsed[1], mpLambda.first);
             std::cout << "For lambda = " << it->first << " difference is: " << ans << std::endl;
         }
     }
