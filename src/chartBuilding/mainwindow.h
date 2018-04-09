@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QInputDialog>
 #include "qcustomplot.h"
 
 namespace Ui
@@ -15,29 +14,19 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(std::pair<uint, uint> xRange, std::pair<uint, uint> yRange, QWidget *parent = nullptr);
-    void addNewGraph(const std::vector<std::pair<uint32_t, uint32_t>> &gr, QColor color, QString name);
-    void saveGraphPng(uint32_t lambda);
+    explicit MainWindow(QWidget *parent = nullptr);
+    void addNewGraph(const std::vector<double> &x, const std::vector<double> &y,
+                     const std::vector<double> &deviation, const QString &name);
+    void saveGraphPng(uint32_t);
     void removeAllGraphs();
+    void resetColors();
     ~MainWindow();
 
-private slots:
-    void titleDoubleClick(QMouseEvent *event);
-    void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);
-    void legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item);
-    void selectionChanged();
-    void mousePress();
-    void mouseWheel();
-    void addRandomGraph();
-    void removeSelectedGraph();
-    void contextMenuRequest(QPoint pos);
-    void moveLegend();
-    void graphClicked(QCPAbstractPlottable *plottable, int dataIndex);
-
 private:
+    static const std::vector<QColor> colors;
+    uint32_t cntColor = 0;
     Ui::MainWindow *ui;
     QCPTextElement *title;
-    QCPLayoutElement *graphName;
 };
 
 #endif // MAINWINDOW_H

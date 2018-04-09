@@ -1,4 +1,3 @@
-find_package(Qt5Widgets REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
 
 add_library(qcustomplot STATIC qcustomplot.cpp)

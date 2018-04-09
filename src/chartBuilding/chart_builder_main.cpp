@@ -34,36 +34,30 @@ int main(int argc, char *argv[])
     }
 
     auto results = utils::parseResultsFiles(files);
-    std::pair<uint, uint> minMaxN = {std::numeric_limits<uint>::max(), 0};
-    std::pair<uint, uint> minMaxAmount = {std::numeric_limits<uint>::max(), 0};
-    auto update = [](std::pair<uint, uint> oldMinMax,
-                     std::pair<uint, uint> newMinMaxN) -> std::pair<uint, uint>
-    {
-        return {std::min(oldMinMax.first, newMinMaxN.first), std::max(oldMinMax.second, newMinMaxN.second)};
-    };
-    for (const auto &table : results)
-    {
-        minMaxN = update(minMaxN, table.getMinMaxN());
-        minMaxAmount = update(minMaxAmount, table.getMinMaxAmount());
-    }
 
-    MainWindow w({minMaxN.first, minMaxN.second + 100}, {minMaxAmount.first, minMaxAmount.second + 100});
-    auto dataRes0 = results[0].getData();
+    MainWindow w;
+    const auto &dataRes0 = results[0].getData();
     for (auto it1 = dataRes0.begin(); it1 != dataRes0.end(); ++it1)
     {
         uint curLambda = it1->first;
+        w.resetColors();
         for (auto it2 = results.begin(); it2 != results.end(); ++it2)
         {
             auto dataIt2 = it2->getData();
             const auto &nToAmountDev = dataIt2[curLambda];
-            std::vector<std::pair<uint, uint>> v;
+            std::vector<double> x;
+            std::vector<double> y;
+            std::vector<double> d;
             for (const auto &n : nToAmountDev)
             {
-                v.push_back(std::make_pair(n.first, n.second.first));
+                x.push_back(static_cast<double>(n.first));
+                y.push_back(static_cast<double>(n.second.first));
+                d.push_back(static_cast<double>(n.second.second));
             }
-            std::sort(v.begin(), v.end(),
-            [](const std::pair<uint, uint> &a, const std::pair<uint, uint> &b) { return a.first < b.first; });
-            w.addNewGraph(v, it2->getColor(), it2->getFileName().c_str());
+            std::sort(x.begin(), x.end());
+            std::sort(y.begin(), y.end());
+            std::sort(d.begin(), d.end());
+            w.addNewGraph(x, y, d, it2->getFileName().c_str());
         }
         w.saveGraphPng(curLambda);
         w.removeAllGraphs();
