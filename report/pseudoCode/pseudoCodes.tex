@@ -1,0 +1,113 @@
+\documentclass{article}
+ 
+\usepackage[T2A]{fontenc} % Поддержка русских букв
+\usepackage[utf8]{inputenc} % Кодировка utf8
+\usepackage[english, russian]{babel} % Языки: русский, английский
+ 
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage{amsmath}
+
+\usepackage{caption}
+\captionsetup[algorithm]{labelsep=colon} 
+ 
+\begin{document}
+ 
+ 
+\begin{algorithm}
+\caption{(1 + $\lambda$) ЭА без настройки параметров мутации}
+\label{alg:1}
+\begin{algorithmic}[1]
+ 
+\State $x[\lambda][n] \leftarrow \textsl{init randomly} $
+\State $parent = x[random\_integer(0 \ldots \lambda)]$
+\While {$cnt(parent) \neq n$}
+    \For {$i = 0 \ldots \lambda$}
+    	\State $x[i] = flip(parent, \dfrac{1}{n})$
+    \EndFor
+    \State $condidate = arg\_max(cnt(x[1]), \ldots, cnt(x[\lambda]))$
+    \If {$cnt(parent) \leq cnt(condidate) $}
+    	\State $parent = condidate$
+    \EndIf
+\EndWhile
+ 
+\end{algorithmic}
+\end{algorithm}
+ 
+\begin{algorithm}
+\caption{(1 + $\lambda$) ЭА c настройкой вероятности мутации и делением на две субпопуляции}
+\label{alg:2}
+\begin{algorithmic}[1]
+ 
+\State $x[\lambda][n] \leftarrow \textsl{init randomly} $
+\State $parent = x[random\_integer(0 \ldots \lambda)]$
+\State $p = \dfrac{1}{n}$
+\While {$cnt(parent) \neq n$}
+    \For {$i = 0 \ldots \dfrac{\lambda}{2}$}
+    	\State $x[i] = flip(parent, \dfrac{p}{2})$
+    \EndFor
+    \For {$i = \dfrac{\lambda}{2} \ldots \lambda $}
+    	\State $x[i] = flip(parent, 2 \times p)$
+    \EndFor
+    \State $condidate = arg\_max(cnt(x[1]), \ldots, cnt(x[\lambda]))$
+    \If {$cnt(parent) \leq cnt(condidate) $}
+    	\State $parent = condidate$
+    \EndIf
+    \State $\textsl{Сделать одно из следующих двух действий с вероятностью } \dfrac{1}{2}$
+    \begin{itemize}
+    	\item $\textsl{Заменить p на вероятность с которой был создан condidate}$
+	    \item $\textsl{Заменить p на } \dfrac{p}{2} \textsl{ или на } 2 \times p \textsl{ с вероятностью } \dfrac{1}{2}$
+	\end{itemize}
+    \State $\textsl{Заменить p на } \min{( \max {(\dfrac{2}{n}, p)}, \dfrac{1}{4})}$
+\EndWhile
+ 
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{(1 + $\lambda$) ЭА c настройкой вероятности мутации и делением на две субпопуляции}
+\label{alg:3}
+\begin{algorithmic}[1]
+ 
+\State $x[\lambda][n] \leftarrow \textsl{init randomly} $
+\State $parent = x[random\_integer(0 \ldots \lambda)]$
+\State $p = \dfrac{1}{n}$
+\State $params[3] \leftarrow \{1 < C_1, C_2 = 1, 0 < C_3 < 1\}$
+\While {$cnt(parent) \neq n$}
+    \For {$i = 0 \ldots \dfrac{\lambda}{3}$}
+    	\State $x[i] = flip(parent, p \times params[0])$
+    \EndFor
+    \For {$i = \dfrac{\lambda}{3} \ldots 2 \times \dfrac{\lambda}{3} $}
+    	\State $x[i] = flip(parent, p \times params[1])$
+    \EndFor
+    \For {$i = 2 \times \dfrac{\lambda}{3} \ldots \lambda $}
+    	\State $x[i] = flip(parent, p \times params[2])$
+    \EndFor
+    \State $condidate = arg\_max(cnt(x[1]), \ldots, cnt(x[\lambda]))$
+    \If {$cnt(parent) \leq cnt(condidate) $}
+    	\State $parent = condidate$
+    \EndIf
+    \State $\textsl{Сделать одно из следующих двух действий с вероятностью } \dfrac{1}{2}$
+    \begin{itemize}
+    	\item $\textsl{Заменить p на вероятность с которой был создан condidate}$
+	    \item $\textsl{Заменить p на } \dfrac{p}{2} \textsl{ или на } 2 \times p \textsl{ с вероятностью } \dfrac{1}{2}$
+	\end{itemize}
+    \State $\textsl{Заменить p на } \min{( \max {(\dfrac{2}{n}, p)}, \dfrac{1}{4})}$
+\EndWhile
+ 
+\end{algorithmic}
+\end{algorithm}
+
+ 
+\end{document}
+
+
+
+
+
+
+
+
+
+
