@@ -26,9 +26,9 @@
     \For {$i = 0 \ldots \lambda$}
     	\State $x[i] = flip(parent, \dfrac{1}{n})$
     \EndFor
-    \State $condidate = arg\_max(cnt(x[1]), \ldots, cnt(x[\lambda]))$
-    \If {$cnt(parent) \leq cnt(condidate) $}
-    	\State $parent = condidate$
+    \State $candidate = arg\_max(cnt(x[1]), \ldots, cnt(x[\lambda]))$
+    \If {$cnt(parent) \leq cnt(candidate) $}
+    	\State $parent = candidate$
     \EndIf
 \EndWhile
  
@@ -50,13 +50,13 @@
     \For {$i = \dfrac{\lambda}{2} \ldots \lambda $}
     	\State $x[i] = flip(parent, 2 \times p)$
     \EndFor
-    \State $condidate = arg\_max(cnt(x[1]), \ldots, cnt(x[\lambda]))$
-    \If {$cnt(parent) \leq cnt(condidate) $}
-    	\State $parent = condidate$
+    \State $candidate = arg\_max(cnt(x[1]), \ldots, cnt(x[\lambda]))$
+    \If {$cnt(parent) \leq cnt(candidate) $}
+    	\State $parent = candidate$
     \EndIf
     \State $\textsl{Сделать одно из следующих двух действий с вероятностью } \dfrac{1}{2}$
     \begin{itemize}
-    	\item $\textsl{Заменить p на вероятность с которой был создан condidate}$
+    	\item $\textsl{Заменить p на вероятность, с которой был создан candidate}$
 	    \item $\textsl{Заменить p на } \dfrac{p}{2} \textsl{ или на } 2 \times p \textsl{ с вероятностью } \dfrac{1}{2}$
 	\end{itemize}
     \State $\textsl{Заменить p на } \min{( \max {(\dfrac{2}{n}, p)}, \dfrac{1}{4})}$
@@ -84,14 +84,14 @@
     \For {$i = 2 \times \dfrac{\lambda}{3} \ldots \lambda $}
     	\State $x[i] = flip(parent, p \times params[2])$
     \EndFor
-    \State $condidate = arg\_max(cnt(x[1]), \ldots, cnt(x[\lambda]))$
-    \If {$cnt(parent) \leq cnt(condidate) $}
-    	\State $parent = condidate$
+    \State $candidate = arg\_max(cnt(x[1]), \ldots, cnt(x[\lambda]))$
+    \If {$cnt(parent) \leq cnt(candidate) $}
+    	\State $parent = candidate$
     \EndIf
     \State $\textsl{Сделать одно из следующих двух действий с вероятностью } \dfrac{1}{2}$
     \begin{itemize}
-    	\item $\textsl{Заменить p на вероятность с которой был создан condidate}$
-	    \item $\textsl{Заменить p на } \dfrac{p}{2} \textsl{ или на } 2 \times p \textsl{ с вероятностью } \dfrac{1}{2}$
+    	\item $\textsl{Заменить p на вероятность, с которой был создан candidate}$
+	    \item $\textsl{Заменить p на } C_1 \times {p} \textsl{ или на } C_3 \times p \textsl{ с вероятностью } \dfrac{1}{2}$
 	\end{itemize}
     \State $\textsl{Заменить p на } \min{( \max {(\dfrac{2}{n}, p)}, \dfrac{1}{4})}$
 \EndWhile
