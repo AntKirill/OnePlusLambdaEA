@@ -73,7 +73,7 @@
 \State $x[\lambda][n] \leftarrow \textsl{init randomly} $
 \State $parent = x[random\_integer(0 \ldots \lambda)]$
 \State $p = \dfrac{1}{n}$
-\State $params[3] \leftarrow \{1 < C_1, C_2 = 1, 0 < C_3 < 1\}$
+\State $params[3] \leftarrow \{1 < C_1, 1, 0 < C_3 < 1\}$
 \While {$cnt(parent) \neq n$}
     \For {$i = 0 \ldots \dfrac{\lambda}{3}$}
     	\State $x[i] = flip(parent, p \times params[0])$
