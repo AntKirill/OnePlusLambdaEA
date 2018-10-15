@@ -1,14 +1,16 @@
 #include "adjustingParamsSolver.h"
-#include "oneMaxSolver.h"
-#include <stdexcept>
-#include <array>
 #include "logger.h"
+#include "oneMaxSolver.h"
+#include <array>
+#include <stdexcept>
 
-template<uint32_t subpopulations>
+template <uint32_t subpopulations>
 uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, uint32_t lambda)
 {
-    if (subpopulations <= 1) throw std::runtime_error("invalid amount of populations");
-    if (params.size() < subpopulations) throw std::runtime_error("too few params");
+    if (subpopulations <= 1)
+        throw std::runtime_error("invalid amount of populations");
+    if (params.size() < subpopulations)
+        throw std::runtime_error("too few params");
 
     probability_t half(2);
     probability_t p2(4);
@@ -30,8 +32,7 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, uint
     AbstractOffspring_patch patch(x.fit, x.p);
     growing_vector<uint> tmp(10);
 
-    auto doMutation = [&](bool & wasUpdate, uint & delta, uint from, uint to)
-    {
+    auto doMutation = [&](bool &wasUpdate, uint &delta, uint from, uint to) {
         double log1prob = log(1 - p);
         for (uint i = from; i < to; ++i)
         {
@@ -61,20 +62,23 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, uint
             x = patch;
             pBest = x.p;
         }
-        if (half()) p = pBest;
-        else if (half()) p *= params[0];
-        else p *= params.back();
+        if (half())
+            p = pBest;
+        else if (half())
+            p *= params[0];
+        else
+            p *= params.back();
         p = std::min(std::max(p1, p), p2);
         ans += lambda;
         patch.toChange.reset();
     }
-    #ifndef NDEBUG
+#ifndef NDEBUG
     if (x.bits.count() != x.bits.size())
     {
         LOG("Expected bits amount : ", x.bits.size(), " found : ", x.bits.count());
         assert(false);
     }
-    #endif
+#endif
     return ans;
 }
 

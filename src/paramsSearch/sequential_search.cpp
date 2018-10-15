@@ -11,10 +11,15 @@ private:
         return ((d > -eps) && (d < eps));
     }
 
+    bool wantToSkip(double a, double epsa, double b, double epsb)
+    {
+        return (isEq(a, 1.3, epsa) && isEq(b, 0.65, epsb));
+    }
+
     void do_search() override
     {
-        Pdd a3paramFirst = {1.3, 1.4};
-        Pdd a3paramSecond = {0.7, 0.75};
+        Pdd a3paramFirst = {1.4, 1.4};
+        Pdd a3paramSecond = {0.65, 0.65};
         double stepFirst = 0.1;
         double stepSecond = 0.05;
         a3paramFirst.second += stepFirst;
@@ -27,7 +32,8 @@ private:
         while (true)
         {
             params.selfAdjParams = {curFirst, 1., curSecond};
-            measureAndUpdate(++cnt);
+            if (!wantToSkip(curFirst, epsFirst, curSecond, epsSecond))
+                measureAndUpdate(++cnt);
             curFirst += stepFirst;
             if (isEq(curFirst, a3paramFirst.second, epsFirst))
             {

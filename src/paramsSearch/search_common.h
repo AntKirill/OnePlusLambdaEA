@@ -31,7 +31,7 @@ namespace search
     private:
         void init_bestRes();
         void finish();
-        bool update_bestRes(std::shared_ptr<ResultsTable>, std::shared_ptr<ResultsTable> newResPtr);
+        bool update_bestRes(std::shared_ptr<ResultsTable>, std::shared_ptr<ResultsTable>);
         bool wasUpdate = false;
         std::vector<double> bestParams;
         int goodTest;
