@@ -1,6 +1,5 @@
 #include "oneMaxSolver.h"
 
-static constexpr double EPS = 0.00000000001;
 static constexpr uint INF = std::numeric_limits<int>::max();
 
 uint NextIndexGetter::get(uint ind, double log1prob)
@@ -10,8 +9,6 @@ uint NextIndexGetter::get(uint ind, double log1prob)
     double r = engine.random01();
     uint k = ind + 1;
     double p = log(r);
-    if (log1prob < EPS)
-        return INF;
     double l = p / log1prob;
     if (std::isnan(l) || std::isinf(l))
         return INF;
