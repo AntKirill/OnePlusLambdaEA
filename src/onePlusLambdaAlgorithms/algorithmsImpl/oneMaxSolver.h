@@ -8,8 +8,6 @@ struct NextIndexGetter
 {
     NextIndexGetter() = default;
     uint get(uint ind, double log1prob);
-
-private:
     utils::fast_random engine;
 };
 

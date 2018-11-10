@@ -50,7 +50,7 @@ SolversFabric::AlgTablePtrsVector SolversFabric::getAlgos() const
                 std::make_shared<ResultsTablePrinter>(s.second, *params.get());
             std::pair<AlgorithmsTags, SolversFabric::TablePtr> p = {s.first, std::move(tablePtr)};
             ans.emplace_back(std::move(p));
-            LOG("enabled algorithm:", s.first, "for file", s.second);
+            LOG("enabled algorithm:", algorithm_tag_to_str(s.first), "for file", s.second);
         }
     }
     return ans;
