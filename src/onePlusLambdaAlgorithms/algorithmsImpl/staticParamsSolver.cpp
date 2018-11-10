@@ -1,7 +1,7 @@
 #include "staticParamsSolver.h"
 #include "logger.h"
 
-uint32_t StaticParamsSolver::solve(AbstractOffspring &x, uint32_t lambda)
+uint32_t StaticParamsSolver::solve(AbstractOffspring &x, std::shared_ptr<Reporter>)
 {
     NextIndexGetter getter;
     uint n = static_cast<uint>(x.bits.size());

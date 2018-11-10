@@ -5,7 +5,7 @@
 struct TheoryStaticParams : public OnePlusLambdaSolver
 {
     using OnePlusLambdaSolver::OnePlusLambdaSolver;
-    uint32_t solve(AbstractOffspring &, uint32_t) override;
+    uint32_t solve(AbstractOffspring &, std::shared_ptr<Reporter>) override;
 };
 
 #endif // THEORYSTATICPARAMS_H

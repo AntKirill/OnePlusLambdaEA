@@ -1,0 +1,4 @@
+add_library(oneMaxSolvers oneMaxSolver.cpp staticParamsSolver.cpp adjustingParamsSolver.cpp theoryStaticParams.cpp)
+add_library(algorithmsReporter internalReporter.cpp)
+target_link_libraries(algorithmsReporter ${Boost_LIBRARIES})
+target_link_libraries(oneMaxSolvers probability algorithmsReporter)

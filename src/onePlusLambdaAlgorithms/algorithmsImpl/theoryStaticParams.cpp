@@ -1,7 +1,7 @@
 #include "theoryStaticParams.h"
 
 
-uint32_t TheoryStaticParams::solve(AbstractOffspring &offsprint, uint32_t lambda)
+uint32_t TheoryStaticParams::solve(AbstractOffspring &offsprint, std::shared_ptr<Reporter>)
 {
     double n = static_cast<double>(offsprint.bits.size());
     double l = static_cast<double>(lambda);

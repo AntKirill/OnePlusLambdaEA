@@ -5,8 +5,14 @@
 #include "logger.h"
 
 template<uint32_t subpopulations>
-uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, uint32_t lambda)
+uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, std::shared_ptr<Reporter> reporter_ptr)
 {
+    Reporter& reporter = *reporter_ptr.get();
+    std::string probability_file_name = "probability";
+    reporter.create_log_file("iteration_number", "probability", probability_file_name);
+    std::string max_fitness_file_name = "max_fitness";
+    reporter.create_log_file("iteration_number", "max_fitness", max_fitness_file_name);
+
     if (subpopulations <= 1) throw std::runtime_error("invalid amount of populations");
     if (params.size() < subpopulations) throw std::runtime_error("too few params");
 
@@ -46,8 +52,10 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, uint
         }
     };
 
+    uint iteration_number = 0;
     while (x.fit != n)
     {
+        reporter.report_data(iteration_number, p.to_double(), probability_file_name);
         bool wasUpdate = false;
         uint delta = n + 1;
         for (uint i = 0; i < segmlambda.size() - 1; ++i)
@@ -56,6 +64,7 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, uint
             doMutation(wasUpdate, delta, segmlambda[i], segmlambda[i + 1]);
             p /= params[i];
         }
+        reporter.report_data(iteration_number, patch.fit, max_fitness_file_name);
         if (wasUpdate)
         {
             x = patch;
@@ -67,6 +76,7 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, uint
         p = std::min(std::max(p1, p), p2);
         ans += lambda;
         patch.toChange.reset();
+        ++iteration_number;
     }
     #ifndef NDEBUG
     if (x.bits.count() != x.bits.size())

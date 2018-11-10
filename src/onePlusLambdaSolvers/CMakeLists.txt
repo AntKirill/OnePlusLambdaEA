@@ -1,2 +1,0 @@
-add_library(oneMaxSolvers oneMaxSolver.cpp staticParamsSolver.cpp adjustingParamsSolver.cpp theoryStaticParams.cpp)
-target_link_libraries(oneMaxSolvers probability)
