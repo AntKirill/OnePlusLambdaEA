@@ -15,7 +15,9 @@ int main(int argc, char *argv[])
         params.lambda[2] = 1;
         params.tests = 10;
         params.selfAdjParams = {2., 1., 0.5};
-        params.wantedAlgos = {{"A3", "resultsSelfAdjustingThree.txt"}  };
+        params.wantedAlgos = {{AlgorithmsTags::AdjustingParamsThreeSubpopulationsTag,
+                               "resultsSelfAdjustingThree.txt"}};
+        params.amountOfThreads = 1;
         Measurer m(std::make_shared<const ParsedParams>(params));
         m.run();
     }

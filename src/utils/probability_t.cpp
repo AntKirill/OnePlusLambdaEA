@@ -39,6 +39,11 @@ bool probability_t::operator<(const probability_t &rhs) const
     return p < rhs.p;
 }
 
+double probability_t::to_double() const
+{
+    return p;
+}
+
 double operator-(double a, const probability_t &p)
 {
     return a - p.p;

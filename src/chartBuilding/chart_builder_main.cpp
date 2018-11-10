@@ -1,5 +1,5 @@
 #include <QApplication>
-#include "mainwindow.h"
+#include "chartBuilder.h"
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     auto results = utils::parseResultsFiles(files);
 
-    MainWindow w;
+    ChartBuilder w;
     const auto &dataRes0 = results[0].getData();
     for (auto it1 = dataRes0.begin(); it1 != dataRes0.end(); ++it1)
     {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
             std::sort(x.begin(), x.end());
             std::sort(y.begin(), y.end());
             std::sort(d.begin(), d.end());
-            w.addNewGraph(x, y, d, it2->getFileName().c_str());
+            w.addNewGraphWithDeviation(x, y, d, it2->getFileName().c_str());
         }
         w.saveGraphPng(curLambda);
         w.removeAllGraphs();

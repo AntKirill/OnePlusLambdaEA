@@ -18,6 +18,7 @@ struct probability_t
     probability_t &operator=(const probability_t &rhs);
     bool operator<(const probability_t &rhs) const;
     friend double operator-(double, const probability_t &);
+    double to_double() const;
 private:
     utils::fast_random engine;
     friend double oneMinus(const probability_t &p);

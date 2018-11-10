@@ -29,7 +29,7 @@ struct AbstractOffspring
 
     virtual uint32_t fitness(const boost::dynamic_bitset<> &) const = 0;
 
-    ~AbstractOffspring() = default;
+    virtual ~AbstractOffspring() = default;
 
 
 protected:

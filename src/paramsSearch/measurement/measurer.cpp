@@ -1,23 +1,25 @@
 #include "measurer.h"
+#include "adjustingParamsSolver.h"
+#include "algorithmTags.h"
+#include "internalReporter.h"
 #include "logger.h"
+#include "resultsTablePrinter.h"
+#include "staticParamsSolver.h"
+#include <boost/asio/post.hpp>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/dynamic_bitset.hpp>
 #include <memory>
 #include <onePlusLambdaSolver.h>
-#include "adjustingParamsSolver.h"
-#include "staticParamsSolver.h"
-#include "resultsTablePrinter.h"
-#include <boost/asio/thread_pool.hpp>
-#include <boost/asio/post.hpp>
-#include <boost/dynamic_bitset.hpp>
 #include <solversFabric.h>
 
-void Measurer::generate(boost::dynamic_bitset<> &x, std::mt19937 &engine) const
+void Measurer::generate(boost::dynamic_bitset<> &x, std::mt19937 &engine)
 {
     std::uniform_int_distribution<> dis(0, 1);
     for (size_t i = 0; i < x.size(); ++i)
         x[i] = static_cast<bool>(dis(engine));
 }
 
-double Measurer::getStandartDeviation(uint32_t ans, const std::vector<double> &t) const
+double Measurer::getStandartDeviation(uint32_t ans, const std::vector<double> &t)
 {
     double t_av = static_cast<double>(ans);
     double s = 0;
@@ -30,9 +32,8 @@ double Measurer::getStandartDeviation(uint32_t ans, const std::vector<double> &t
     return sqrt(s);
 }
 
-void Measurer::average(const std::shared_ptr<OnePlusLambdaSolver> &solver_ptr, uint32_t n,
-                       uint32_t lambda,
-                       ResultsTablePrinter *table) const
+void Measurer::average(AlgorithmsTags solver_tag, uint32_t n, uint32_t lambda,
+                       ResultsTablePrinter *table)
 {
     uint32_t ans = 0;
     std::vector<double> t;
@@ -43,19 +44,24 @@ void Measurer::average(const std::shared_ptr<OnePlusLambdaSolver> &solver_ptr, u
     {
         generate(offs, gen);
         OneMaxOffspring x(offs, probability_t(1. / static_cast<double>(offs.size())));
-        uint32_t ti = solver_ptr->solve(x, lambda);
+        std::shared_ptr<OnePlusLambdaSolver> solver_ptr =
+            fabric.create_solver(solver_tag, lambda, n);
+        fs_lock.lock();
+        auto reporter_ptr = Reporter::createReporter(solver_tag, lambda, n, solver_ptr->get_params_ptr());
+        fs_lock.unlock();
+        uint32_t ti = solver_ptr->solve(x, reporter_ptr);
         ans += ti;
         t.push_back(static_cast<double>(ti));
     }
     ans /= TESTS;
     table->add(lambda, n, ans, getStandartDeviation(ans, t));
     table->printResults();
-//    complete(id, table);
+    //    complete(id, table);
 }
 
-void Measurer::pool_all(const std::vector <
-                        std::pair<std::shared_ptr<OnePlusLambdaSolver>, std::shared_ptr<ResultsTablePrinter> >> &fts,
-                        size_t threadsAmount) const
+void Measurer::pool_all(
+    const std::vector<std::pair<AlgorithmsTags, std::shared_ptr<ResultsTablePrinter>>> &fts,
+    size_t threadsAmount)
 {
     boost::asio::thread_pool pool(threadsAmount);
     for (const auto &f : fts)
@@ -81,12 +87,13 @@ void Measurer::run()
     SolversFabric fabric(params);
     auto fts = fabric.getAlgos();
 
-    pool_all(fts, 8);
+    pool_all(fts, static_cast<size_t>(params->amountOfThreads));
 
-    for (const auto &ft : fts) ft.second->printResults();
+    for (const auto &ft : fts)
+        ft.second->printResults();
 
     auto end = std::chrono::steady_clock::now();
-    LOG("time : ", std::chrono::duration <double, std::milli> (end - start).count() / 1000., " secs");
+    LOG("time : ", std::chrono::duration<double, std::milli>(end - start).count() / 1000., " secs");
 }
 
 std::shared_ptr<ResultsTable> Measurer::runOneAlg()
@@ -95,15 +102,15 @@ std::shared_ptr<ResultsTable> Measurer::runOneAlg()
 
     LOG("Used params:\n", *params.get());
 
-    SolversFabric fabric(params);
     auto fts = fabric.getAlgos();
     SolversFabric::AlgTablePtrsVector anyAlg = {*fts.begin()};
 
     pool_all(anyAlg, 8);
 
-    for (const auto &ft : fts) ft.second->printResults();
+    for (const auto &ft : fts)
+        ft.second->printResults();
 
     auto end = std::chrono::steady_clock::now();
-    LOG("time : ", std::chrono::duration <double, std::milli> (end - start).count() / 1000., " secs");
+    LOG("time : ", std::chrono::duration<double, std::milli>(end - start).count() / 1000., " secs");
     return fts.begin()->second;
 }

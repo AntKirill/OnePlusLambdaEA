@@ -48,7 +48,12 @@ void ConfigParser::parseAlgos(const std::string &)
     boost::trim(s);
     std::vector<std::string> tokens;
     boost::split(tokens, s, boost::is_any_of(" "), boost::token_compress_on);
-    params.wantedAlgos[tokens[0]] = tokens[1];
+    params.wantedAlgos[str_to_algorithm_tag(tokens[0])] = tokens[1];
+}
+
+void ConfigParser::parseAmountOfThreads(const std::string &)
+{
+    fin >> params.amountOfThreads;
 }
 
 ConfigParser::ConfigParser(const std::string &fileName)
@@ -91,6 +96,7 @@ std::ostream &operator<<(std::ostream &of, const ParsedParams &p)
     of << "selfAdjParams: ";
     for (auto i : p.selfAdjParams) of << i << " ";
     of << std::endl;
+    of << "amount of threads: " << p.amountOfThreads << std::endl;
     return of;
 }
 

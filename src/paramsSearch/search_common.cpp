@@ -1,9 +1,9 @@
 #include "search_common.h"
-#include <iostream>
 #include "logger.h"
-#include "metrics.h"
 #include "measurer.h"
+#include "metrics.h"
 #include "resultsTableScanner.h"
+#include <iostream>
 
 bool search::addNewResult()
 {
@@ -18,8 +18,7 @@ bool search::addNewResult()
     return true;
 }
 
-bool search::updateRes(std::shared_ptr<ResultsTable> best,
-                       std::shared_ptr<ResultsTable> cur,
+bool search::updateRes(std::shared_ptr<ResultsTable> best, std::shared_ptr<ResultsTable> cur,
                        bool &wasUpdate)
 {
     int64_t n = utils::metrics1(*best.get(), *cur.get(), best->firstLambda());
@@ -32,17 +31,18 @@ bool search::updateRes(std::shared_ptr<ResultsTable> best,
     return false;
 }
 
-
 bool search::isBig(double d)
 {
     if (d > 1.)
     {
-        if (d > 1.55) return true;
+        if (d > 1.55)
+            return true;
         return false;
     }
     else
     {
-        if (d > 0.55) return true;
+        if (d > 0.55)
+            return true;
         return false;
     }
 }
@@ -55,14 +55,13 @@ void search::handleParams(double &d1, double &d2)
         d2 = 1 - d2;
 }
 
-
 void search::dump(std::ofstream &off, const std::vector<double> &v)
 {
     off << "selfAdjParams: ";
-    for (auto i : v) off << i << " ";
+    for (auto i : v)
+        off << i << " ";
     off << std::endl;
 }
-
 
 search::Common::Common()
 {
@@ -73,7 +72,8 @@ search::Common::Common()
     params.lambda[1] = 3200;
     params.lambda[2] = 1;
     params.tests = 10;
-    params.wantedAlgos = {{"A3", "resultsSelfAdjustingThree.txt"}};
+    params.wantedAlgos = {
+        {AlgorithmsTags::AdjustingParamsThreeSubpopulationsTag, "resultsSelfAdjustingThree.txt"}};
 }
 
 void search::Common::search()
@@ -84,7 +84,7 @@ void search::Common::search()
     finish();
 }
 
-void search::Common::config(){}
+void search::Common::config() {}
 
 void search::Common::init_bestRes()
 {
@@ -103,8 +103,8 @@ bool search::Common::measureAndUpdate(int testNumber)
     std::shared_ptr<ResultsTable> res = m.runOneAlg();
     if (update_bestRes(bestResPtr, res))
     {
-        LOG("New best params found: ",
-            params.selfAdjParams[0], params.selfAdjParams[1], params.selfAdjParams[2]);
+        LOG("New best params found: ", params.selfAdjParams[0], params.selfAdjParams[1],
+            params.selfAdjParams[2]);
         bestParams = params.selfAdjParams;
         goodTest = testNumber;
         std::ofstream fout;
@@ -113,11 +113,13 @@ bool search::Common::measureAndUpdate(int testNumber)
         fout.close();
         std::string begComand = "cat resultsSelfAdj* > ";
         int ok = system((begComand + bestResFile).c_str());
-        if (ok != 0) LOG("Faild to update results");
+        if (ok != 0)
+            LOG("Faild to update results");
         bestResPtr->open(bestResFile);
         bestResPtr->parse();
     }
-    if (!search::addNewResult()) return false;
+    if (!search::addNewResult())
+        return false;
     SEP();
     return true;
 }
@@ -126,7 +128,8 @@ void search::Common::finish()
 {
     if (wasUpdate)
     {
-        LOG("Best params:", bestParams[0], bestParams[1], bestParams[2], "on test number", goodTest);
+        LOG("Best params:", bestParams[0], bestParams[1], bestParams[2], "on test number",
+            goodTest);
     }
     else
     {
@@ -146,7 +149,3 @@ bool search::Common::update_bestRes(std::shared_ptr<ResultsTable> best,
     }
     return false;
 }
-
-
-
-
