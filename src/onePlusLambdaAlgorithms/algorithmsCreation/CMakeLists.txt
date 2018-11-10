@@ -1,0 +1,3 @@
+add_library(solversFabric STATIC solversFabric.cpp)
+add_library(algorithmsTags algorithmsTags.cpp)
+target_link_libraries(solversFabric oneMaxSolvers)

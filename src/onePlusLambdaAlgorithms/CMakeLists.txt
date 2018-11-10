@@ -1,0 +1,3 @@
+include_directories(algorithmsCreation)
+add_subdirectory(algorithmsCreation)
+add_subdirectory(algorithmsImpl)
