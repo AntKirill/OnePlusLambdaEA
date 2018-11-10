@@ -1,20 +1,23 @@
 #include "adjustingParamsSolver.h"
-#include "oneMaxSolver.h"
-#include <stdexcept>
-#include <array>
 #include "logger.h"
+#include "oneMaxSolver.h"
+#include <array>
+#include <stdexcept>
 
-template<uint32_t subpopulations>
-uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, std::shared_ptr<Reporter> reporter_ptr)
+template <uint32_t subpopulations>
+uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
+                                                      std::shared_ptr<Reporter> reporter_ptr)
 {
-    Reporter& reporter = *reporter_ptr.get();
+    if (subpopulations <= 1)
+        throw std::runtime_error("invalid amount of populations");
+    if (params.size() < subpopulations)
+        throw std::runtime_error("too few params");
+
+    Reporter &reporter = *reporter_ptr.get();
     std::string probability_file_name = "probability";
     reporter.create_log_file("iteration_number", "probability", probability_file_name);
     std::string max_fitness_file_name = "max_fitness";
     reporter.create_log_file("iteration_number", "max_fitness", max_fitness_file_name);
-
-    if (subpopulations <= 1) throw std::runtime_error("invalid amount of populations");
-    if (params.size() < subpopulations) throw std::runtime_error("too few params");
 
     probability_t half(2);
     probability_t p2(4);
@@ -36,8 +39,7 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, std:
     AbstractOffspring_patch patch(x.fit, x.p);
     growing_vector<uint> tmp(10);
 
-    auto doMutation = [&](bool & wasUpdate, uint & delta, uint from, uint to)
-    {
+    auto doMutation = [&](bool &wasUpdate, uint &delta, uint from, uint to) {
         double log1prob = log(1 - p);
         for (uint i = from; i < to; ++i)
         {
@@ -70,21 +72,24 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x, std:
             x = patch;
             pBest = x.p;
         }
-        if (half()) p = pBest;
-        else if (half()) p *= params[0];
-        else p *= params.back();
+        if (half())
+            p = pBest;
+        else if (half())
+            p *= params[0];
+        else
+            p *= params.back();
         p = std::min(std::max(p1, p), p2);
         ans += lambda;
         patch.toChange.reset();
         ++iteration_number;
     }
-    #ifndef NDEBUG
+#ifndef NDEBUG
     if (x.bits.count() != x.bits.size())
     {
         LOG("Expected bits amount : ", x.bits.size(), " found : ", x.bits.count());
         assert(false);
     }
-    #endif
+#endif
     return ans;
 }
 
