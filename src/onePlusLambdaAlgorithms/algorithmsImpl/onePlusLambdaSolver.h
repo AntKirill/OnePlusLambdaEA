@@ -25,6 +25,14 @@ protected:
     uint32_t lambda;
     uint32_t offspring_length;
     AlgorithmsTags algorithmsTag;
+    std::shared_ptr<Reporter> my_reporter_ptr = nullptr;
+
+    void setReporter(std::shared_ptr<Reporter> reporter_ptr)
+    {
+        this->my_reporter_ptr = reporter_ptr;
+    }
+
+
 };
 
 #endif // ONEPLUSLAMBDASOLVER_H

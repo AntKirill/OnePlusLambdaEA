@@ -15,11 +15,31 @@ void Reporter::report_meta(const std::vector<double> &params)
 
 void Reporter::report_meta(std::string meta) { meto_fout << std::move(meta) << std::endl; }
 
+void Reporter::report_simple_mutation(uint iteration_number, const std::string &filename)
+{
+    if (iteration_number == prev_iteration_number)
+    {
+        ++cnt_simple_mutation;
+    }
+    else
+    {
+        report_data(iteration_number, cnt_simple_mutation, filename);
+        prev_iteration_number = iteration_number;
+        cnt_simple_mutation = 1;
+    }
+}
+
 void Reporter::create_log_file(std::string x_sign, std::string y_sign, const std::string &filename)
 {
     std::ofstream *fout = new std::ofstream(folder + "/" + filename);
+    *fout << std::fixed;
     res_fout_poll[filename] = fout;
     *fout << x_sign.c_str() << " " << y_sign << std::endl;
+}
+
+void Reporter::create_log_file_simple_mutation(std::string filename)
+{
+    create_log_file("iteration_number", "amount_of_easy_mutations", std::move(filename));
 }
 
 std::shared_ptr<Reporter> Reporter::createReporter(AlgorithmsTags alg_tag, uint32_t lambda,

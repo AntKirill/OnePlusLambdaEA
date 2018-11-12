@@ -13,18 +13,21 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
     if (params.size() < subpopulations)
         throw std::runtime_error("too few params");
 
+    setReporter(reporter_ptr);
     Reporter &reporter = *reporter_ptr.get();
     std::string probability_file_name = "probability";
     reporter.create_log_file("iteration_number", "probability", probability_file_name);
     std::string max_fitness_file_name = "max_fitness";
     reporter.create_log_file("iteration_number", "max_fitness", max_fitness_file_name);
+    std::string easy_mutation_filename = "easy_mutations";
+    reporter.create_log_file_simple_mutation(easy_mutation_filename);
 
     probability_t half(2);
     probability_t p2(4);
 
     uint n = static_cast<uint>(x.bits.size());
     probability_t p(x.p);
-//    const probability_t p1(n / 2);
+    //    const probability_t p1(n / 2);
     const probability_t p1(static_cast<double>(0.));
     uint ans = 0;
     std::array<uint, subpopulations + 1> segmlambda;
@@ -40,12 +43,14 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
     AbstractOffspring_patch patch(x.fit, x.p);
     growing_vector<uint> tmp(10);
 
+    uint iteration_number = 0;
     auto doMutation = [&](bool &wasUpdate, uint &delta, uint from, uint to) {
         double log1prob = log(1 - p);
         for (uint i = from; i < to; ++i)
         {
             uint condidateFit = x.fit;
-            bool updated = mutation(x, getter, patch, tmp, p, condidateFit, log1prob);
+            bool updated = mutation(x, getter, patch, tmp, p, condidateFit, log1prob,
+                                    iteration_number, easy_mutation_filename);
             if (!updated && (delta > x.fit - condidateFit))
             {
                 delta = x.fit - condidateFit;
@@ -55,7 +60,6 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
         }
     };
 
-    uint iteration_number = 0;
     while (x.fit != n)
     {
         reporter.report_data(iteration_number, p.to_double(), probability_file_name);

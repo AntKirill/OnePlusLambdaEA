@@ -11,12 +11,13 @@ uint32_t StaticParamsSolver::solve(AbstractOffspring &x, std::shared_ptr<Reporte
     growing_vector<uint> tmp(10);
     double log1prob = log(static_cast<double>(1) - p);
 
+    std::string ns;
     while (x.fit != n)
     {
         for (uint i = 0; i < lambda; ++i)
         {
             uint condidateFit = x.fit;
-            mutation(x, getter, patch, tmp, p, condidateFit, log1prob);
+            mutation(x, getter, patch, tmp, p, condidateFit, log1prob, 0, ns);
         }
         x = patch;
         ans += lambda;

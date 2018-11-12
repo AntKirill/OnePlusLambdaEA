@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     //        return 1;
     //    }
     builder = new ChartBuilder;
-    walkFs({"max_fitness", "probability"}, "RandomSamplesData", 10);
+    walkFs({"max_fitness", "probability", "easy_mutations"}, "RandomSamplesData", 10);
     delete builder;
     return 0;
 }

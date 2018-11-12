@@ -40,12 +40,12 @@ void Measurer::average(AlgorithmsTags solver_tag, uint32_t n, uint32_t lambda,
     std::random_device rd;
     std::mt19937 gen(rd());
     boost::dynamic_bitset<> offs(n);
+    std::shared_ptr<OnePlusLambdaSolver> solver_ptr =
+        fabric.create_solver(solver_tag, lambda, n);
     for (uint32_t test = 0; test < TESTS; ++test)
     {
         generate(offs, gen);
         OneMaxOffspring x(offs, probability_t(1. / static_cast<double>(offs.size())));
-        std::shared_ptr<OnePlusLambdaSolver> solver_ptr =
-            fabric.create_solver(solver_tag, lambda, n);
         fs_lock.lock();
         auto reporter_ptr = Reporter::createReporter(solver_tag, lambda, n, solver_ptr->get_params_ptr());
         fs_lock.unlock();

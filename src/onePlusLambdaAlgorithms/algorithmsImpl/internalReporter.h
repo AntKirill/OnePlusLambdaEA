@@ -4,6 +4,7 @@
 #include "configParser.h"
 #include <boost/filesystem.hpp>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -17,6 +18,8 @@ struct Reporter
 
     void report_meta(std::string meta);
 
+    void report_simple_mutation(uint iteration_number, const std::string &filename);
+
     template <typename X, typename Y>
     void report_data(X x, Y y, const std::string &filename)
     {
@@ -24,12 +27,15 @@ struct Reporter
         if (it != res_fout_poll.end())
         {
             std::ofstream *fout = it->second;
-            *fout << std::to_string(x) << " " << std::to_string(y) << std::endl;
+            *fout << std::setprecision(std::numeric_limits<double>::max_digits10) << x << " " << y
+                  << std::endl;
             return;
         }
     }
 
     void create_log_file(std::string x_sign, std::string y_sign, const std::string &filename);
+
+    void create_log_file_simple_mutation(std::string filename);
 
     void create_meto_file(std::string filename);
 
@@ -41,6 +47,8 @@ struct Reporter
                                                     uint32_t n, const std::vector<double> *params);
 
 private:
+    uint prev_iteration_number = 0;
+    uint cnt_simple_mutation = 0;
     std::string folder;
     std::unordered_map<std::string, std::ofstream *> res_fout_poll;
     std::ofstream meto_fout;

@@ -1,11 +1,14 @@
 #include "oneMaxSolver.h"
 
+static constexpr double EPS = 0.00000000001;
 static constexpr uint INF = std::numeric_limits<int>::max();
 
-uint NextIndexGetter::get(uint ind, double log1prob)
+inline uint NextIndexGetter::get(uint ind, double log1prob)
 {
     // formula: ind + 1 + log_{log1prob}(r), where log1prob = 1 - p, r = random01()
 
+    if (fabs(log1prob) < EPS)
+        return INF;
     double r = engine.random01();
     uint k = ind + 1;
     double p = log(r);
@@ -17,20 +20,22 @@ uint NextIndexGetter::get(uint ind, double log1prob)
 
 bool OneMaxSolver::mutation(const AbstractOffspring &curParrent, NextIndexGetter &getter,
                             AbstractOffspring_patch &patch, growing_vector<uint> &tmp,
-                            const probability_t &p, uint &curChildrenFit, double log1prob)
+                            const probability_t &p, uint &curChildrenFit, double log1prob,
+                            uint iteration_number, const std::string &report_file_name)
 {
     uint ind = getter.get(-1, log1prob);
-    if (ind >= curParrent.bits.size())
+    const uint curParrentSize = static_cast<uint>(curParrent.bits.size());
+    bool was_easy_mutation = false;
+    if (ind >= curParrentSize)
     {
         ind = static_cast<uint>(
-            floor(getter.engine.random01() * static_cast<double>(curParrent.bits.size())));
-        if (ind == curParrent.bits.size())
-        {
-            --ind;
-        }
+            floor(getter.engine.random01() * static_cast<double>(curParrentSize)));
+        if (ind == curParrentSize) --ind;
+        was_easy_mutation = true;
     }
 
-    while (ind < curParrent.bits.size())
+    bool first_usual_mutation_happen = false;
+    while (ind < curParrentSize)
     {
         if (curParrent.bits.test(ind))
             --curChildrenFit;
@@ -38,6 +43,13 @@ bool OneMaxSolver::mutation(const AbstractOffspring &curParrent, NextIndexGetter
             ++curChildrenFit;
         tmp.my_push_back(ind);
         ind = getter.get(ind, log1prob);
+        if (ind < curParrentSize) {
+            first_usual_mutation_happen = true;
+        }
+    }
+
+    if (was_easy_mutation && !first_usual_mutation_happen) {
+        my_reporter_ptr->report_simple_mutation(iteration_number, report_file_name);
     }
 
     bool updated = false;
