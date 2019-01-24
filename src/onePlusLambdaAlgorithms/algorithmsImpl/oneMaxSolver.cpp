@@ -42,15 +42,19 @@ bool OneMaxSolver::mutation(const AbstractOffspring &curParrent, NextIndexGetter
         else
             ++curChildrenFit;
         tmp.my_push_back(ind);
+        if (was_easy_mutation)
+            break;
         ind = getter.get(ind, log1prob);
         if (ind < curParrentSize) {
             first_usual_mutation_happen = true;
         }
     }
 
+#ifdef ENABLE_INTERNAL_INFO
     if (was_easy_mutation && !first_usual_mutation_happen) {
         my_reporter_ptr->report_simple_mutation(iteration_number, report_file_name);
     }
+#endif
 
     bool updated = false;
     if (curChildrenFit >= patch.fit)
