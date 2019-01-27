@@ -10,5 +10,11 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
 
 message("${CMAKE_CXX_COMPILER_VERSION}")
+option(ENABLE_INTERNAL_INFO "Logging internal info of algorithms" OFF)
+
+if (ENABLE_INTERNAL_INFO)
+    message("Internal info enabled")
+    add_definitions(-DENABLE_INTERNAL_INFO=1)
+endif()
 
 add_subdirectory(src)

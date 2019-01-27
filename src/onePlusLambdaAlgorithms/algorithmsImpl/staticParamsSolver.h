@@ -6,7 +6,7 @@
 struct StaticParamsSolver : public OneMaxSolver
 {
     using OneMaxSolver::OneMaxSolver;
-    uint32_t solve(AbstractOffspring &, std::shared_ptr<Reporter>) override;
+    uint64_t solve(AbstractOffspring &, std::shared_ptr<Reporter>) override;
 };
 
 #endif // STATICPARAMSSOLVER_H

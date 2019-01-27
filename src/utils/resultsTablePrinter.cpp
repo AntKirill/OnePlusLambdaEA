@@ -17,7 +17,7 @@ ResultsTablePrinter::ResultsTablePrinter(const std::string &fileName, uint32_t o
     fout << std::endl;
 }
 
-void ResultsTablePrinter::add(uint lambda, uint n, uint evoluations, double deviation)
+void ResultsTablePrinter::add(uint lambda, uint64_t n, uint evoluations, double deviation)
 {
     data_mtx.lock();
     data[lambda][n] = std::make_pair(evoluations, deviation);

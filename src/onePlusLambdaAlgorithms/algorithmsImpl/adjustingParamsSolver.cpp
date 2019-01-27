@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 template <uint32_t subpopulations>
-uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
+uint64_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
                                                       std::shared_ptr<Reporter> reporter_ptr)
 {
     if (subpopulations <= 1)
@@ -13,6 +13,7 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
     if (params.size() < subpopulations)
         throw std::runtime_error("too few params");
 
+#ifdef ENABLE_INTERNAL_INFO
     setReporter(reporter_ptr);
     Reporter &reporter = *reporter_ptr.get();
     std::string probability_file_name = "probability";
@@ -21,15 +22,15 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
     reporter.create_log_file("iteration_number", "max_fitness", max_fitness_file_name);
     std::string easy_mutation_filename = "easy_mutations";
     reporter.create_log_file_simple_mutation(easy_mutation_filename);
-
+#endif
     probability_t half(2);
     probability_t p2(4);
 
     uint n = static_cast<uint>(x.bits.size());
     probability_t p(x.p);
     //    const probability_t p1(n / 2);
-    const probability_t p1(static_cast<double>(0.));
-    uint ans = 0;
+    const probability_t p1(static_cast<double>(1. / (static_cast<double>(n) * static_cast<double>(n))));
+    uint64_t ans = 0;
     std::array<uint, subpopulations + 1> segmlambda;
     segmlambda[0] = 0;
     for (uint i = 1; i < segmlambda.size(); ++i)
@@ -49,8 +50,13 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
         for (uint i = from; i < to; ++i)
         {
             uint condidateFit = x.fit;
-            bool updated = mutation(x, getter, patch, tmp, p, condidateFit, log1prob,
-                                    iteration_number, easy_mutation_filename);
+            bool updated =
+                mutation(x, getter, patch, tmp, p, condidateFit, log1prob, iteration_number,
+#ifdef ENABLE_INTERNAL_INFO
+                         easy_mutation_filename);
+#else
+                         "");
+#endif
             if (!updated && (delta > x.fit - condidateFit))
             {
                 delta = x.fit - condidateFit;
@@ -62,7 +68,9 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
 
     while (x.fit != n)
     {
+#ifdef ENABLE_INTERNAL_INFO
         reporter.report_data(iteration_number, p.to_double(), probability_file_name);
+#endif
         bool wasUpdate = false;
         uint delta = n + 1;
         for (uint i = 0; i < segmlambda.size() - 1; ++i)
@@ -71,7 +79,9 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
             doMutation(wasUpdate, delta, segmlambda[i], segmlambda[i + 1]);
             p /= params[i];
         }
+#ifdef ENABLE_INTERNAL_INFO
         reporter.report_data(iteration_number, patch.fit, max_fitness_file_name);
+#endif
         if (wasUpdate)
         {
             x = patch;
@@ -84,7 +94,7 @@ uint32_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
         else
             p *= params.back();
         p = std::min(std::max(p1, p), p2);
-        ans += lambda;
+        ans += static_cast<uint64_t>(lambda);
         patch.toChange.reset();
         ++iteration_number;
     }

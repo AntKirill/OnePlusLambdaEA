@@ -13,7 +13,7 @@ struct OnePlusLambdaSolver
         : params(params), lambda(lambda), offspring_length(n), algorithmsTag(tag)
     {
     }
-    virtual uint32_t solve(AbstractOffspring &offspring, std::shared_ptr<Reporter> reporter) = 0;
+    virtual uint64_t solve(AbstractOffspring &offspring, std::shared_ptr<Reporter> reporter) = 0;
     virtual ~OnePlusLambdaSolver() {}
     const std::vector<double> *get_params_ptr() const {
         if (params.size() == 0) return nullptr;

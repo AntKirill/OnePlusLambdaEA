@@ -1,8 +1,16 @@
 #include "staticParamsSolver.h"
 #include "logger.h"
 
-uint32_t StaticParamsSolver::solve(AbstractOffspring &x, std::shared_ptr<Reporter>)
+uint64_t StaticParamsSolver::solve(AbstractOffspring &x, std::shared_ptr<Reporter> reporter_ptr)
 {
+
+#ifdef ENABLE_INTERNAL_INFO
+    setReporter(reporter_ptr);
+    Reporter &reporter = *reporter_ptr.get();
+    std::string easy_mutation_filename = "easy_mutations";
+    reporter.create_log_file_simple_mutation(easy_mutation_filename);
+#endif
+
     NextIndexGetter getter;
     uint n = static_cast<uint>(x.bits.size());
     probability_t p(n);

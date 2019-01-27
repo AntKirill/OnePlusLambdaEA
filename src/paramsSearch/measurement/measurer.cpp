@@ -19,7 +19,7 @@ void Measurer::generate(boost::dynamic_bitset<> &x, std::mt19937 &engine)
         x[i] = static_cast<bool>(dis(engine));
 }
 
-double Measurer::getStandartDeviation(uint32_t ans, const std::vector<double> &t)
+double Measurer::getStandartDeviation(uint64_t ans, const std::vector<double> &t)
 {
     double t_av = static_cast<double>(ans);
     double s = 0;
@@ -35,21 +35,25 @@ double Measurer::getStandartDeviation(uint32_t ans, const std::vector<double> &t
 void Measurer::average(AlgorithmsTags solver_tag, uint32_t n, uint32_t lambda,
                        ResultsTablePrinter *table)
 {
-    uint32_t ans = 0;
+    uint64_t ans = 0;
     std::vector<double> t;
     std::random_device rd;
     std::mt19937 gen(rd());
     boost::dynamic_bitset<> offs(n);
-    std::shared_ptr<OnePlusLambdaSolver> solver_ptr =
-        fabric.create_solver(solver_tag, lambda, n);
+    std::shared_ptr<OnePlusLambdaSolver> solver_ptr = fabric.create_solver(solver_tag, lambda, n);
     for (uint32_t test = 0; test < TESTS; ++test)
     {
         generate(offs, gen);
         OneMaxOffspring x(offs, probability_t(1. / static_cast<double>(offs.size())));
         fs_lock.lock();
-        auto reporter_ptr = Reporter::createReporter(solver_tag, lambda, n, solver_ptr->get_params_ptr());
+        auto reporter_ptr =
+#ifdef ENABLE_INTERNAL_INFO
+            Reporter::createReporter(solver_tag, lambda, n, solver_ptr->get_params_ptr());
+#else
+            nullptr;
+#endif
         fs_lock.unlock();
-        uint32_t ti = solver_ptr->solve(x, reporter_ptr);
+        uint64_t ti = solver_ptr->solve(x, reporter_ptr);
         ans += ti;
         t.push_back(static_cast<double>(ti));
     }

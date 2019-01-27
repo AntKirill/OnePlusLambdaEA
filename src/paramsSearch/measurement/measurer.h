@@ -13,7 +13,7 @@ class Measurer
 {
     const std::shared_ptr<const ParsedParams> params;
     void generate(boost::dynamic_bitset<> &x, std::mt19937 &engine);
-    double getStandartDeviation(uint32_t ans, const std::vector<double> &t);
+    double getStandartDeviation(uint64_t ans, const std::vector<double> &t);
     void average(AlgorithmsTags solver_ptr, uint32_t n, uint32_t lambda,
                  ResultsTablePrinter *table);
     void pool_all(const SolversFabric::AlgTablePtrsVector &fts, size_t threadsAmount);

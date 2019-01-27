@@ -12,7 +12,7 @@ struct ResultsTablePrinter : ResultsTable
     ResultsTablePrinter(const std::string &fileName,
                         const ParsedParams &params) : ResultsTablePrinter(fileName, 25, params) {}
 
-    void add(uint lambda, uint n, uint evoluations, double deviation);
+    void add(uint lambda, uint64_t n, uint evoluations, double deviation);
 
     void printResults();
 
