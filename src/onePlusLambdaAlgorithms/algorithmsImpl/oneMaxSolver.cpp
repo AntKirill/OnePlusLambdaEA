@@ -34,7 +34,6 @@ bool OneMaxSolver::mutation(const AbstractOffspring &curParrent, NextIndexGetter
         was_easy_mutation = true;
     }
 
-    bool first_usual_mutation_happen = false;
     while (ind < curParrentSize)
     {
         if (curParrent.bits.test(ind))
@@ -45,9 +44,6 @@ bool OneMaxSolver::mutation(const AbstractOffspring &curParrent, NextIndexGetter
         if (was_easy_mutation)
             break;
         ind = getter.get(ind, log1prob);
-        if (ind < curParrentSize) {
-            first_usual_mutation_happen = true;
-        }
     }
 
 #ifdef ENABLE_INTERNAL_INFO
