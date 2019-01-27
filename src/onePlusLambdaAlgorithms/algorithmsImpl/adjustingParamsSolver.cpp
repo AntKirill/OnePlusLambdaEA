@@ -1,10 +1,6 @@
 #include "adjustingParamsSolver.h"
-#include "logger.h"
-#include "oneMaxSolver.h"
-#include <array>
-#include <stdexcept>
 
-template <uint32_t subpopulations>
+template<uint32_t subpopulations>
 uint64_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
                                                       std::shared_ptr<Reporter> reporter_ptr)
 {
@@ -45,7 +41,8 @@ uint64_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
     growing_vector<uint> tmp(10);
 
     uint iteration_number = 0;
-    auto doMutation = [&](bool &wasUpdate, uint &delta, uint from, uint to) {
+    auto doMutation = [&](bool &wasUpdate, uint &delta, uint from, uint to)
+    {
         double log1prob = log(1 - p);
         for (uint i = from; i < to; ++i)
         {
@@ -53,7 +50,7 @@ uint64_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
             bool updated =
                 mutation(x, getter, patch, tmp, p, condidateFit, log1prob, iteration_number,
 #ifdef ENABLE_INTERNAL_INFO
-                         easy_mutation_filename);
+                    easy_mutation_filename);
 #else
                          "");
 #endif
@@ -108,5 +105,7 @@ uint64_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
     return ans;
 }
 
-template struct AdjustingParamsSolver<2>;
-template struct AdjustingParamsSolver<3>;
+template
+struct AdjustingParamsSolver<2>;
+template
+struct AdjustingParamsSolver<3>;
