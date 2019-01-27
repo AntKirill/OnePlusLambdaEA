@@ -1,6 +1,7 @@
 #include "oneMaxSolver.h"
 
 static constexpr double EPS = 0.00000000001;
+
 static constexpr uint INF = std::numeric_limits<int>::max();
 
 inline uint NextIndexGetter::get(uint ind, double log1prob)
@@ -25,16 +26,6 @@ bool OneMaxSolver::mutation(const AbstractOffspring &curParrent, NextIndexGetter
 {
     uint ind = getter.get(-1, log1prob);
     const uint curParrentSize = static_cast<uint>(curParrent.bits.size());
-    bool was_easy_mutation = false;
-    if (ind >= curParrentSize)
-    {
-        ind = static_cast<uint>(
-            floor(getter.engine.random01() * static_cast<double>(curParrentSize)));
-        if (ind == curParrentSize) --ind;
-        was_easy_mutation = true;
-    }
-
-    bool first_usual_mutation_happen = false;
     while (ind < curParrentSize)
     {
         if (curParrent.bits.test(ind))
@@ -42,12 +33,7 @@ bool OneMaxSolver::mutation(const AbstractOffspring &curParrent, NextIndexGetter
         else
             ++curChildrenFit;
         tmp.my_push_back(ind);
-        if (was_easy_mutation)
-            break;
         ind = getter.get(ind, log1prob);
-        if (ind < curParrentSize) {
-            first_usual_mutation_happen = true;
-        }
     }
 
 #ifdef ENABLE_INTERNAL_INFO
