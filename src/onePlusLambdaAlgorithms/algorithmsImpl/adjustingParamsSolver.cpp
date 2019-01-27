@@ -24,8 +24,8 @@ uint64_t AdjustingParamsSolver<subpopulations>::solve(AbstractOffspring &x,
 
     uint n = static_cast<uint>(x.bits.size());
     probability_t p(x.p);
-    //    const probability_t p1(n / 2);
-    const probability_t p1(static_cast<double>(1. / (static_cast<double>(n) * static_cast<double>(n))));
+    const probability_t p1(n / 2);
+//    const probability_t p1(static_cast<double>(1. / (static_cast<double>(n) * static_cast<double>(n))));
     uint64_t ans = 0;
     std::array<uint, subpopulations + 1> segmlambda;
     segmlambda[0] = 0;
